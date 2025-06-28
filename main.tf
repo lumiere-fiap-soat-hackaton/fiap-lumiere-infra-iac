@@ -7,8 +7,10 @@ provider "aws" {
 }
 
 module "api_gateway" {
-  source       = "./modules/api-gateway"
-  project_name = var.project_name
+  source                = "./modules/api-gateway"
+  project_name          = var.project_name
+  load_balancer_dns     = var.load_balancer_dns
+  cognito_user_pool_arn = module.cognito_pools.user_pool_arn
 }
 
 module "cognito_pools" {
@@ -32,11 +34,14 @@ module "lambda_functions" {
 }
 
 module "s3_buckets" {
-  source       = "./modules/s3-buckets"
-  project_name = var.project_name
+  source                    = "./modules/s3-buckets"
+  project_name              = var.project_name
+  source_files_events_queue = module.sqs_queues.source_files_events_queue_arn
+  result_files_events_queue = module.sqs_queues.result_files_events_queue_arn
 }
 
 module "sqs_queues" {
-  source       = "./modules/sqs-queues"
-  project_name = var.project_name
+  source                      = "./modules/sqs-queues"
+  project_name                = var.project_name
+  media_storage_events_origin = module.s3_buckets.media_storage_bucket_arn
 }
