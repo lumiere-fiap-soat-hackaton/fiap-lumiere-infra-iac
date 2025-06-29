@@ -13,7 +13,7 @@ resource "aws_api_gateway_authorizer" "cognito_authorizer" {
   type            = "COGNITO_USER_POOLS"
   identity_source = "method.request.header.Authorization"
   rest_api_id     = aws_api_gateway_rest_api.api_gateway.id
-  provider_arns = [var.cognito_user_pool_arn]
+  provider_arns   = [var.cognito_user_pool_arn]
 }
 
 # /storage/{operation}

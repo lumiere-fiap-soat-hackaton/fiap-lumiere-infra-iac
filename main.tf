@@ -41,7 +41,8 @@ module "s3_buckets" {
 }
 
 module "sqs_queues" {
-  source                      = "./modules/sqs-queues"
-  project_name                = var.project_name
-  media_storage_events_origin = module.s3_buckets.media_storage_bucket_arn
+  source            = "./modules/sqs-queues"
+  project_name      = var.project_name
+  source_bucket_arn = module.s3_buckets.source_bucket_arn
+  result_bucket_arn = module.s3_buckets.result_bucket_arn
 }

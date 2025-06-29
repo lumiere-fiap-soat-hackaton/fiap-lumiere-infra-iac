@@ -1,7 +1,7 @@
 resource "aws_cognito_user_pool" "user_pool" {
   name = "${var.project_name}-user-pool"
 
-  username_attributes = ["email"]
+  username_attributes      = ["email"]
   auto_verified_attributes = ["email"]
 
   password_policy {
@@ -36,6 +36,6 @@ resource "aws_cognito_user_pool_client" "user_pool_client" {
   ]
 
   prevent_user_existence_errors = "ENABLED"
-  supported_identity_providers = ["COGNITO"]
+  supported_identity_providers  = ["COGNITO"]
 }
 
