@@ -8,7 +8,12 @@ variable "source_bucket_arn" {
   description = "ARN of s3 bucket to allow sending messages to the SQS queue"
 }
 
-variable "result_bucket_arn" {
+variable "processor_lambda_arn" {
   type        = string
-  description = "ARN of s3 bucket to allow sending messages to the SQS queue"
+  description = "ARN of the Lambda function that processes the results and sends messages to the SQS queue"
+}
+
+variable "account_id" {
+  type        = string
+  description = "AWS Account ID"
 }

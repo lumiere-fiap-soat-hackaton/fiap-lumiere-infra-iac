@@ -6,13 +6,11 @@ resource "aws_sqs_queue" "result_files_events_queue" {
   name = "${var.project_name}-result-files-events-queue"
 }
 
-# This data source gets the current AWS Account ID automatically
-data "aws_caller_identity" "current" {}
 
 data "aws_iam_policy_document" "source_files_events_queue_policy_doc" {
   statement {
-    effect    = "Allow"
-    actions   = ["sqs:SendMessage"]
+    effect  = "Allow"
+    actions = ["sqs:SendMessage"]
     # The service principal for S3
     principals {
       type        = "Service"
@@ -30,7 +28,7 @@ data "aws_iam_policy_document" "source_files_events_queue_policy_doc" {
     condition {
       test     = "StringEquals"
       variable = "aws:SourceAccount"
-      values   = [data.aws_caller_identity.current.account_id]
+      values   = [var.account_id]
     }
   }
 }
@@ -43,23 +41,23 @@ resource "aws_sqs_queue_policy" "source_queue_policy" {
 
 data "aws_iam_policy_document" "result_files_events_queue_policy_doc" {
   statement {
-    effect    = "Allow"
-    actions   = ["sqs:SendMessage"]
+    effect  = "Allow"
+    actions = ["sqs:SendMessage"]
     principals {
       type        = "Service"
-      identifiers = ["s3.amazonaws.com"]
+      identifiers = ["lambda.amazonaws.com"]
     }
     resources = [aws_sqs_queue.result_files_events_queue.arn]
 
     condition {
       test     = "ArnLike"
       variable = "aws:SourceArn"
-      values   = [var.result_bucket_arn]
+      values   = [var.processor_lambda_arn]
     }
     condition {
       test     = "StringEquals"
       variable = "aws:SourceAccount"
-      values   = [data.aws_caller_identity.current.account_id]
+      values   = [var.account_id]
     }
   }
 }

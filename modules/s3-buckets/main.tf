@@ -1,43 +1,14 @@
-resource "aws_s3_bucket" "buckets" {
-  for_each = local.buckets
-
-  bucket = "${var.project_name}-${each.value.name_suffix}"
+resource "aws_s3_bucket" "media_storage" {
+  bucket = "${var.project_name}-bucket"
 
   tags = {
-    Name        = each.value.name_tag
+    Name        = "Media storage Bucket"
     Environment = "dev"
   }
 }
 
-# Apply public access restrictions to all buckets
-resource "aws_s3_bucket_public_access_block" "restrictions" {
-  for_each = aws_s3_bucket.buckets
-
-  bucket = each.value.id
-
-  block_public_acls       = true
-  block_public_policy     = true
-  ignore_public_acls      = true
-  restrict_public_buckets = true
-}
-
-# Create event notifications for all buckets
-resource "aws_s3_bucket_notification" "events" {
-  for_each = local.buckets
-
-  bucket = aws_s3_bucket.buckets[each.key].id
-
-  queue {
-    queue_arn = each.value.queue_arn
-    events    = ["s3:ObjectCreated:Put"]
-  }
-}
-
-# Conditionally create lifecycle configuration using the filtered map
-resource "aws_s3_bucket_lifecycle_configuration" "lifecycle" {
-  for_each = local.buckets_with_lifecycle
-
-  bucket = aws_s3_bucket.buckets[each.key].id
+resource "aws_s3_bucket_lifecycle_configuration" "media_storage_lifecycle" {
+  bucket = aws_s3_bucket.media_storage.id
 
   rule {
     id     = "expire-old-uploads"
@@ -53,11 +24,16 @@ resource "aws_s3_bucket_lifecycle_configuration" "lifecycle" {
   }
 }
 
-# Conditionally create CORS configuration using the filtered map
-resource "aws_s3_bucket_cors_configuration" "cors_config" {
-  for_each = local.buckets_with_cors
+resource "aws_s3_bucket_public_access_block" "media_storage_restrictions" {
+  bucket                  = aws_s3_bucket.media_storage.id
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
 
-  bucket = aws_s3_bucket.buckets[each.key].id
+resource "aws_s3_bucket_cors_configuration" "media_storage_cors_config" {
+  bucket = aws_s3_bucket.media_storage.id
 
   cors_rule {
     allowed_headers = ["*"]
@@ -67,3 +43,23 @@ resource "aws_s3_bucket_cors_configuration" "cors_config" {
     max_age_seconds = 3000
   }
 }
+
+resource "aws_s3_bucket_notification" "media_storage_sources_event" {
+  bucket = aws_s3_bucket.media_storage.id
+
+  queue {
+    queue_arn     = var.source_files_events_queue
+    events        = ["s3:ObjectCreated:Put"]
+    filter_prefix = "sources/"
+  }
+}
+
+# resource "aws_s3_bucket_notification" "media_storage_results_event" {
+#   bucket = aws_s3_bucket.media_storage.id
+
+#   queue {
+#     queue_arn     = var.result_files_events_queue
+#     events = ["s3:ObjectCreated:Put"]
+#     filter_prefix = "results/"
+#   }
+# }
