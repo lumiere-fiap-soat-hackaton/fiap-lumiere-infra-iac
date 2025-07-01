@@ -13,8 +13,10 @@ permissions:
 
 
 jobs:
-  apply:
+  destroy:
     runs-on: ubuntu-latest
+    # This job requires approval to run
+    environment: production
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
