@@ -148,12 +148,13 @@ resource "aws_ecs_task_definition" "api" {
           protocol      = "tcp"
         }
       ]
-      tags = {
-        Name        = "${var.project_name}-container"
-        Environment = "Dev"
-      }
     }
   ])
+
+  tags = {
+    Name      = "${var.project_name}-api-task"
+    ManagedBy = "Terraform"
+  }
 }
 
 resource "aws_ecs_service" "api" {

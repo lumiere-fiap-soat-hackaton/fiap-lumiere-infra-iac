@@ -28,7 +28,5 @@ resource "aws_lambda_function" "media_processor" {
 resource "aws_lambda_event_source_mapping" "sqs_trigger" {
   event_source_arn = var.source_files_events_queue_arn
   function_name    = aws_lambda_function.media_processor.arn
-
-  # Optional: Number of messages to pull in one batch (1-10)
-  batch_size = 5
+  batch_size = local.lambda_batch_size
 }
