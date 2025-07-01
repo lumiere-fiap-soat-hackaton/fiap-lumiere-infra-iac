@@ -1,5 +1,9 @@
+# This data source gets the current AWS Account ID automatically
+data "aws_caller_identity" "current" {}
+
 locals {
-  account_role_arn = "arn:aws:iam::${var.account_id}:role/LabRole"
+  account_id       = data.aws_caller_identity.current.account_id
+  account_role_arn = "arn:aws:iam::${local.account_id}:role/LabRole"
 }
 
 provider "aws" {
@@ -24,13 +28,20 @@ module "dynamo_db" {
 }
 
 module "ecs_instances" {
-  source       = "./modules/ecs-instances"
-  project_name = var.project_name
+  source                      = "./modules/ecs-instances"
+  project_name                = var.project_name
+  vpc_id                      = var.vpc_id
+  public_subnets              = var.subnet_ids
+  ecs_task_execution_role_arn = local.account_role_arn
+  ecs_task_role_arn           = local.account_role_arn
+  desired_count               = var.ecs_service_desired_count
 }
 
 module "lambda_functions" {
-  source       = "./modules/lambda-functions"
-  project_name = var.project_name
+  source                        = "./modules/lambda-functions"
+  project_name                  = var.project_name
+  lambda_execution_role_arn     = local.account_role_arn
+  source_files_events_queue_arn = module.sqs_queues.source_files_events_queue_arn
 }
 
 module "s3_buckets" {
@@ -41,7 +52,9 @@ module "s3_buckets" {
 }
 
 module "sqs_queues" {
-  source                      = "./modules/sqs-queues"
-  project_name                = var.project_name
-  media_storage_events_origin = module.s3_buckets.media_storage_bucket_arn
+  source               = "./modules/sqs-queues"
+  project_name         = var.project_name
+  account_id           = local.account_id
+  source_bucket_arn    = module.s3_buckets.media_storage_bucket_arn
+  processor_lambda_arn = module.lambda_functions.lambda_arn
 }

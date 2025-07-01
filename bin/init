@@ -1,0 +1,26 @@
+# --- Step 1: Define your bucket name and region ---
+export BUCKET_NAME="tfstate-bucket-solo-$(uuidgen | tr '[:upper:]' '[:lower:]')"
+export AWS_REGION="us-east-1" # Or your preferred region
+
+# --- Step 2: Create the S3 Bucket ---
+echo "Creating S3 bucket: $BUCKET_NAME"
+aws s3api create-bucket \
+  --bucket $BUCKET_NAME \
+  --region $AWS_REGION
+
+# --- Step 3: Enable Versioning on the Bucket ---
+# Still highly recommended to protect against accidental deletion.
+# echo "Enabling versioning on $BUCKET_NAME..."
+# aws s3api put-bucket-versioning \
+#   --bucket $BUCKET_NAME \
+#   --versioning-configuration Status=Enabled
+
+# --- Step 4: Block all Public Access ---
+# A critical security measure.
+echo "Blocking all public access on $BUCKET_NAME..."
+aws s3api put-public-access-block \
+  --bucket $BUCKET_NAME \
+  --public-access-block-configuration "BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true"
+
+echo "✅ S3 bucket created successfully!"
+echo "S3 Bucket: $BUCKET_NAME"

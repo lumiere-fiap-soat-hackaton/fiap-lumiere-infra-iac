@@ -1,0 +1,123 @@
+on:
+  pull_request:
+    branches:
+      - 'main'
+
+env:
+  terraform_version: 1.12.2
+  terraform_wrapper: false
+  terraform_output_file: tfplan
+
+permissions:
+  id-token: write   # Required for requesting the JWT
+  contents: read    # Required for actions/checkout
+  pull-requests: write # Required for posting a PR comment
+      
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Configure AWS credentials
+        id: aws-credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+            aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
+            aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+            aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.terraform_version }}
+          terraform_wrapper: ${{ env.terraform_wrapper }}
+
+      - name: Terraform Init
+        id: init
+        run: terraform init
+      
+      - name: Terraform Format Check
+        id: fmt
+        run: terraform fmt -check
+
+      - name: Terraform Validate
+        id: validate
+        run: terraform validate
+
+      - name: Terraform Plan
+        id: plan
+        run: terraform plan -no-color -input=false -out=${{ env.terraform_output_file }}
+        continue-on-error: true
+      
+      - name: Create Plan Output
+        id: plan-output
+        if: github.event_name == 'pull_request' && steps.plan.outcome == 'success'
+        run: |
+          # Use terraform show to convert the binary plan file to human-readable text
+          # and escape it for use in a JSON payload.
+          PLAN_OUTPUT=$(terraform show -no-color ${{ env.terraform_output_file }})
+          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          echo "plan<<$EOF" >> "$GITHUB_OUTPUT"
+          echo "$PLAN_OUTPUT" >> "$GITHUB_OUTPUT"
+          echo "$EOF" >> "$GITHUB_OUTPUT"
+      
+      - name: Post Plan to PR
+        id: post-plan
+        uses: actions/github-script@v7
+        if: github.event_name == 'pull_request'
+        env:
+          PLAN_EXIT_CODE: ${{ steps.plan.outputs.exitcode }}
+          PLAN_OUTPUT: ${{ steps.plan-output.outputs.plan }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { PLAN_EXIT_CODE, PLAN_OUTPUT } = process.env;
+            const output = `#### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
+            #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
+            #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
+
+            <details><summary>Show Plan</summary>
+
+            \`\`\`terraform
+            ${PLAN_OUTPUT}
+            \`\`\`
+
+            </details>
+
+            *Pushed by: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
+
+            const issue_number = context.issue.number;
+            const repel_comment = await github.rest.issues.listComments({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue_number,
+            });
+
+            const botComment = repel_comment.data.find(comment => {
+              return comment.user.type === 'Bot' && comment.body.includes('Terraform Plan')
+            })
+
+            if (botComment) {
+              github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: output
+              });
+            } else {
+              github.rest.issues.createComment({
+                issue_number: issue_number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: output
+              });
+            }
+            
+            // Fail the workflow if the plan had an error (exit code 1)
+            if (PLAN_EXIT_CODE === '1') {
+              core.setFailed('Terraform plan failed.');
+            }

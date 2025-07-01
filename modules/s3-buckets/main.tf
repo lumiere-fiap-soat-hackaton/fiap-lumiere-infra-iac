@@ -39,7 +39,7 @@ resource "aws_s3_bucket_cors_configuration" "media_storage_cors_config" {
     allowed_headers = ["*"]
     allowed_origins = ["*"]
     allowed_methods = ["GET", "PUT"]
-    expose_headers = ["ETag"]
+    expose_headers  = ["ETag"]
     max_age_seconds = 3000
   }
 }
@@ -49,17 +49,17 @@ resource "aws_s3_bucket_notification" "media_storage_sources_event" {
 
   queue {
     queue_arn     = var.source_files_events_queue
-    events = ["s3:ObjectCreated:Put"]
-    filter_prefix = "sources/"
+    events        = ["s3:ObjectCreated:Put"]
+    filter_prefix = "sources/*"
   }
 }
 
-resource "aws_s3_bucket_notification" "media_storage_results_event" {
-  bucket = aws_s3_bucket.media_storage.id
+# resource "aws_s3_bucket_notification" "media_storage_results_event" {
+#   bucket = aws_s3_bucket.media_storage.id
 
-  queue {
-    queue_arn     = var.result_files_events_queue
-    events = ["s3:ObjectCreated:Put"]
-    filter_prefix = "results/"
-  }
-}
+#   queue {
+#     queue_arn     = var.result_files_events_queue
+#     events = ["s3:ObjectCreated:Put"]
+#     filter_prefix = "results/"
+#   }
+# }
