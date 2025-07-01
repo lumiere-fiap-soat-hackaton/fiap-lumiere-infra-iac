@@ -50,7 +50,7 @@ resource "aws_s3_bucket_notification" "media_storage_sources_event" {
   queue {
     queue_arn     = var.source_files_events_queue
     events        = ["s3:ObjectCreated:Put"]
-    filter_prefix = "sources/"
+    filter_prefix = "sources/*"
   }
 }
 
