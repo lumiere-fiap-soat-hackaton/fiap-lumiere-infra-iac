@@ -84,11 +84,11 @@ jobs:
         if: steps.plan.outcome == 'success'
         id: plan-text
         run: |
-          PLAN_OUTPUT=$(terraform show -no-color ${{ env.terraform_output_file }})
+          PLAN_OUTPUT=$(terraform show -no-color ${{ inputs.output-file }})
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
-          echo "plan<<$EOF" >> ${{ env.terraform_output_file }}.txt
-          echo "$PLAN_OUTPUT" >> ${{ env.terraform_output_file }}.txt
-          echo "$EOF" >> ${{ env.terraform_output_file }}.txt
+          echo "plan<<$EOF" >> ${{ inputs.output-file }}.txt
+          echo "$PLAN_OUTPUT" >> ${{ inputs.output-file }}.txt
+          echo "$EOF" >> ${{ inputs.output-file }}.txt
 
       - name: Upload Terraform Plan Artifact
         if: steps.plan.outcome == 'success'
