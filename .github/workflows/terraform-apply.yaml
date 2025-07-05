@@ -18,8 +18,8 @@ permissions:
 
 jobs:
   plan:
-    name: 'Run Terraform Plan'
-    uses: ./.github/workflows/terraform-plan-reusable.yml
+    name: 'Run Terraform Validate and Plan'
+    uses: ./.github/workflows/terraform-plan.yaml
     secrets: inherit
 
   apply:

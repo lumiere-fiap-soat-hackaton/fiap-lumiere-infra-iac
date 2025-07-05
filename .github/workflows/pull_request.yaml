@@ -9,11 +9,11 @@ permissions:
   pull-requests: write # Required for posting a PR comment
   contents: read       # Required for checkout in the reusable workflow
 
+  
 jobs:
   plan-and-validate:
-    name: 'Run Terraform Plan'
-
-    uses: ./.github/workflows/terraform-plan.yml
+    name: 'Run Terraform Validate and Plan'
+    uses: ./.github/workflows/terraform-plan.yaml
     secrets: inherit
 
   add-pr-comment:
