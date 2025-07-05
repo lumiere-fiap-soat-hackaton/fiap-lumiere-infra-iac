@@ -1,6 +1,6 @@
 data "archive_file" "lambda_zip" {
   type        = "zip"
-  source_file = "${path.cwd}/lambda-code/lambda_function.py"
+  source_file = "${path.module}/lambda-code/lambda_function.py"
   output_path = "${path.cwd}/.terraform/tmp/lambda_function_${local.environment}.zip"
 }
 
