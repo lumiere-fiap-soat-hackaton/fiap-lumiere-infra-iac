@@ -80,10 +80,22 @@ jobs:
         run: terraform plan -no-color -input=false -out=${{ inputs.output-file }}
         continue-on-error: true
       
+      - name: Convert plan to JSON and save as text
+        if: steps.plan.outcome == 'success'
+        id: plan-text
+        run: |
+          PLAN_OUTPUT=$(terraform show -no-color ${{ env.terraform_output_file }})
+          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          echo "plan<<$EOF" >> ${{ env.terraform_output_file }}.txt
+          echo "$PLAN_OUTPUT" >> ${{ env.terraform_output_file }}.txt
+          echo "$EOF" >> ${{ env.terraform_output_file }}.txt
+
       - name: Upload Terraform Plan Artifact
         if: steps.plan.outcome == 'success'
         uses: actions/upload-artifact@v4
         with:
           name: terraform-plan
-          path: ${{ inputs.output-file }}
+          path: |
+            ${{ inputs.output-file }}
+            ${{ inputs.output-file }}.txt
           retention-days: 1 # Keep artifact for one day
