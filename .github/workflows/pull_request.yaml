@@ -7,6 +7,7 @@ on:
 
 permissions:
   pull-requests: write # Required for posting a PR comment
+  id-token: write      # Required for requesting the JWT
   contents: read       # Required for checkout in the reusable workflow
 
   
