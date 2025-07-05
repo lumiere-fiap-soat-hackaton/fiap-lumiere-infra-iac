@@ -38,8 +38,8 @@ jobs:
             const init_outcome = '${{ needs.plan-and-validate.outputs.init-outcome }}';
 
             // Debugging output
-            echo `Plan Outcome: ${plan_outcome}`;
-            echo `Plan Output: ${plan_output}`;
+            console.log(`Plan Outcome: ${plan_outcome}`);
+            console.log(`Plan Output: ${plan_output}`);
 
             // Determine the final status for the comment and workflow
             let overall_status = 'Success ✅';
