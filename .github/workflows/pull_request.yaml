@@ -44,7 +44,7 @@ jobs:
             }
             
             // Handle empty plan output
-            const plan_output = plan_output.trim() || 'No changes detected or plan output is empty.';
+            const plan_display_output = plan_output.trim() || 'No changes detected or plan output is empty.';
             
             const output = `### Terraform Plan: ${overall_status}
             ---
@@ -55,7 +55,7 @@ jobs:
             <details><summary>Show Plan</summary>
 
             \`\`\`terraform
-            ${plan_output}
+            ${plan_display_output}
             \`\`\`
 
             </details>
