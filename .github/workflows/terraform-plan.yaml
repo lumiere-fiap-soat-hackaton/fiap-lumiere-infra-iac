@@ -81,17 +81,33 @@ jobs:
 
       - name: Terraform Plan
         id: plan
-        run: terraform plan -no-color -input=false -out=${{ inputs.output-file }}
+        run: |
+          # Run terraform plan and capture output
+          terraform plan -no-color -input=false -out=${{ inputs.output-file }} 2>&1 | tee plan_raw_output.txt
+          exit ${PIPESTATUS[0]}
         continue-on-error: true
       
       - name: Create Plan Output
         id: create-plan-output
-        if: steps.plan.outcome == 'success'
+        if: always() && (steps.plan.outcome == 'success' || steps.plan.outcome == 'failure')
         run: |
-          PLAN_OUTPUT=$(terraform show -no-color ${{ inputs.output-file }})
+          # Capture the plan output and handle multiline properly
+          if [ "${{ steps.plan.outcome }}" = "success" ] && [ -f "${{ inputs.output-file }}" ]; then
+            echo "Using terraform show output from plan file..."
+            terraform show -no-color ${{ inputs.output-file }} > plan_output.txt
+          elif [ -f "plan_raw_output.txt" ]; then
+            echo "Using raw plan output from failed plan..."
+            cat plan_raw_output.txt > plan_output.txt
+          else
+            echo "No plan output available. Plan may have failed completely." > plan_output.txt
+          fi
+          
+          # Create a random delimiter for multiline output
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          
+          # Set the output using the heredoc syntax
           echo "plan<<$EOF" >> "$GITHUB_OUTPUT"
-          echo "$PLAN_OUTPUT" >> "$GITHUB_OUTPUT"
+          cat plan_output.txt >> "$GITHUB_OUTPUT"
           echo "$EOF" >> "$GITHUB_OUTPUT"
 
       - name: Upload Terraform Plan Artifact

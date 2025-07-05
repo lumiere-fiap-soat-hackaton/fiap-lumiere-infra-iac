@@ -43,6 +43,9 @@ jobs:
               plan_summary = `#### Terraform Plan 📖\`${plan_outcome}\`\n\nTerraform plan failed. See details below.`
             }
             
+            // Handle empty plan output
+            const plan_output = plan_output.trim() || 'No changes detected or plan output is empty.';
+            
             const output = `### Terraform Plan: ${overall_status}
             ---
             #### Terraform Format and Style 🚀\`${fmt_outcome}\`
