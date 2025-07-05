@@ -33,9 +33,13 @@ jobs:
           script: |
             // Retrieve outputs from the 'call-plan-workflow' job
             const plan_outcome = '${{ needs.plan-and-validate.outputs.plan-outcome }}';
-            const plan_output = `${{ needs.plan-and-validate.outputs.plan-text }}`;
+            const plan_output = `${{ needs.plan-and-validate.outputs.plan-output }}`;
             const fmt_outcome = '${{ needs.plan-and-validate.outputs.fmt-outcome }}';
             const init_outcome = '${{ needs.plan-and-validate.outputs.init-outcome }}';
+
+            # debug 
+            console.log(`Plan Outcome: ${plan_outcome}`);
+            console.log(`Plan Output: ${plan_output}`);
 
             // Determine the final status for the comment and workflow
             let overall_status = 'Success ✅';
