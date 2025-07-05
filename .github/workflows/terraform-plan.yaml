@@ -1,0 +1,105 @@
+# This is a reusable workflow. It cannot be run on its own.
+# It is designed to be called by another workflow.
+name: 'Reusable TF Plan'
+
+on:
+  workflow_call:
+    inputs:
+      terraform-version:
+        description: 'The version of Terraform to use'
+        required: false
+        type: string
+        default: '1.12.2'
+      terraform-wrapper:
+        description: 'Whether to use the Terraform wrapper'
+        required: false
+        type: boolean
+        default: false
+      output-file:
+        description: 'The file to write the Terraform plan output to'
+        required: false
+        type: string
+        default: 'tfplan'
+    
+    outputs:
+      plan-outcome:
+        description: "The outcome of the terraform plan step (success, failure)"
+        value: ${{ jobs.plan.outputs.plan-outcome }}
+      fmt-outcome:
+        description: "The outcome of the terraform fmt step"
+        value: ${{ jobs.plan.outputs.fmt-outcome }}
+      init-outcome:
+        description: "The outcome of the terraform init step"
+        value: ${{ jobs.plan.outputs.init-outcome }}
+        
+permissions:
+  id-token: write   # Required for requesting the JWT
+  contents: read    # Required for actions/checkout
+
+jobs:
+  plan:
+    name: 'Validate and Plan'
+    runs-on: ubuntu-latest
+    outputs:
+      plan-outcome: ${{ steps.plan.outcome }}
+      fmt-outcome: ${{ steps.fmt.outcome }}
+      init-outcome: ${{ steps.init.outcome }}
+      
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ inputs.terraform-version }}
+          terraform_wrapper: ${{ inputs.terraform-wrapper }}
+
+      - name: Terraform Init
+        id: init
+        run: terraform init
+      
+      - name: Terraform Format Check
+        id: fmt
+        run: terraform fmt -check
+
+      - name: Terraform Validate
+        id: validate
+        run: terraform validate
+
+      - name: Terraform Plan
+        id: plan
+        run: terraform plan -no-color -input=false -out=${{ inputs.output-file }}
+        continue-on-error: true
+      
+      - name: Convert plan to JSON and save as text
+        if: always()
+        id: plan-text
+        run: |
+          if [ "${{ steps.plan.outcome }}" == "success" ]; then
+            PLAN_OUTPUT=$(terraform show -no-color ${{ inputs.output-file }})
+          else
+            PLAN_OUTPUT="Terraform plan failed. Please check the logs for details."
+          fi
+          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          echo "plan<<$EOF" >> ${{ inputs.output-file }}.txt
+          echo "$PLAN_OUTPUT" >> ${{ inputs.output-file }}.txt
+          echo "$EOF" >> ${{ inputs.output-file }}.txt
+
+      - name: Upload Terraform Plan Artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-plan
+          path: |
+            ${{ inputs.output-file }}
+            ${{ inputs.output-file }}.txt
+          retention-days: 1 # Keep artifact for one day

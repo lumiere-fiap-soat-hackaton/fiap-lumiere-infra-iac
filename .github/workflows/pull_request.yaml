@@ -1,0 +1,122 @@
+name: 'Terraform PR Commenter'
+
+on:
+  pull_request:
+    branches:
+      - 'main'
+
+env:
+  terraform_output_file: tfplan
+
+permissions:
+  pull-requests: write # Required for posting a PR comment
+  id-token: write      # Required for requesting the JWT
+  contents: read       # Required for checkout in the reusable workflow
+
+  
+jobs:
+  plan-and-validate:
+    name: 'Run Terraform Validate and Plan'
+    uses: ./.github/workflows/terraform-plan.yaml
+    with:
+      terraform-version: '1.12.2'
+      terraform-wrapper: true
+    secrets: inherit
+
+  add-pr-comment:
+    name: 'Add PR Comment'
+    runs-on: ubuntu-latest
+    needs: [plan-and-validate]
+    
+    steps:
+      - name: Download Terraform Plan Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: terraform-plan # Must match the artifact name in the reusable workflow
+      
+      - name: Read plan
+        id: read-plan
+        run: |
+          if [ -f "${{ env.terraform_output_file }}.txt" ]; then
+            PLAN_CONTENT=$(cat ${{ env.terraform_output_file }}.txt)
+          else
+            PLAN_CONTENT="Plan output file not found."
+          fi
+          echo "PLAN_OUTPUT<<EOF" >> $GITHUB_ENV
+          echo "$PLAN_CONTENT" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      - name: Post Plan to PR
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            // Retrieve outputs from the 'call-plan-workflow' job
+            const plan_output = process.env.PLAN_OUTPUT;
+            const plan_outcome = '${{ needs.plan-and-validate.outputs.plan-outcome }}';
+            const fmt_outcome = '${{ needs.plan-and-validate.outputs.fmt-outcome }}';
+            const init_outcome = '${{ needs.plan-and-validate.outputs.init-outcome }}';
+
+            // Debugging output
+            console.log(`Plan Outcome: ${plan_outcome}`);
+            console.log(`Plan Output: ${plan_output}`);
+
+            // Determine the final status for the comment and workflow
+            let overall_status = 'Success ✅';
+            let plan_summary = `#### Terraform Plan 📖\`${plan_outcome}\``;
+            
+            if (plan_outcome !== 'success') {
+              overall_status = 'Failure ❌';
+              plan_summary = `#### Terraform Plan 📖\`${plan_outcome}\`\n\nTerraform plan failed. See details below.`
+            }
+            
+            // Handle empty plan output
+            const plan_display_output = plan_output.trim() || 'No changes detected or plan output is empty.';
+            
+            const output = `### Terraform Plan: ${overall_status}
+            ---
+            #### Terraform Format and Style 🚀\`${fmt_outcome}\`
+            #### Terraform Initialization ⚙️\`${init_outcome}\`
+            ${plan_summary}
+
+            <details><summary>Show Plan</summary>
+
+            \`\`\`terraform
+            ${plan_display_output}
+            \`\`\`
+
+            </details>
+
+            *Pushed by: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
+
+            const issue_number = context.issue.number;
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue_number,
+            });
+
+            const botComment = comments.find(comment => {
+              return comment.user.type === 'Bot' && comment.body.includes('Terraform Plan:')
+            });
+
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: output
+              });
+            } else {
+              await github.rest.issues.createComment({
+                issue_number: issue_number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: output
+              });
+            }
+
+            // Fail the workflow run if the plan step failed
+            if (plan_outcome !== 'success') {
+              core.setFailed('Terraform plan step failed.');
+            }
