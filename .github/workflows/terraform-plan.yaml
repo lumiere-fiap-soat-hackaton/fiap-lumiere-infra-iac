@@ -1,6 +1,4 @@
-# This is a reusable workflow. It cannot be run on its own.
-# It is designed to be called by another workflow.
-name: 'Reusable TF Plan'
+name: 'Terraform Plan'
 
 on:
   workflow_call:
