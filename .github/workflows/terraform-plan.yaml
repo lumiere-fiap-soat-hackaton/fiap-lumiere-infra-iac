@@ -25,9 +25,6 @@ on:
       plan-outcome:
         description: "The outcome of the terraform plan step (success, failure)"
         value: ${{ jobs.plan.outputs.plan-outcome }}
-      plan-output:
-        description: "The text output of the terraform plan"
-        value: ${{ jobs.plan.outputs.plan-text }}
       fmt-outcome:
         description: "The outcome of the terraform fmt step"
         value: ${{ jobs.plan.outputs.fmt-outcome }}
@@ -45,7 +42,6 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       plan-outcome: ${{ steps.plan.outcome }}
-      plan-text: ${{ steps.create-plan-output.outputs.plan }}
       fmt-outcome: ${{ steps.fmt.outcome }}
       init-outcome: ${{ steps.init.outcome }}
       
@@ -84,16 +80,6 @@ jobs:
         run: terraform plan -no-color -input=false -out=${{ inputs.output-file }}
         continue-on-error: true
       
-      - name: Create Plan Output
-        id: create-plan-output
-        if: steps.plan.outcome == 'success'
-        run: |
-          PLAN_OUTPUT=$(terraform show -no-color ${{ inputs.output-file }})
-          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
-          echo "plan<<$EOF" >> "$GITHUB_OUTPUT"
-          echo "$PLAN_OUTPUT" >> "$GITHUB_OUTPUT"
-          echo "$EOF" >> "$GITHUB_OUTPUT"
-
       - name: Upload Terraform Plan Artifact
         if: steps.plan.outcome == 'success'
         uses: actions/upload-artifact@v4

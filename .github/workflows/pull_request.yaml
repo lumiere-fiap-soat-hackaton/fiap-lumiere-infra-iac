@@ -5,6 +5,9 @@ on:
     branches:
       - 'main'
 
+env:
+  terraform_output_file: tfplan
+
 permissions:
   pull-requests: write # Required for posting a PR comment
   id-token: write      # Required for requesting the JWT
@@ -26,14 +29,28 @@ jobs:
     needs: [plan-and-validate]
     
     steps:
+      - name: Download Terraform Plan Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: terraform-plan # Must match the artifact name in the reusable workflow
+
+      - name: Read plan
+        id: plan
+        run: |
+          PLAN_OUTPUT=$(terraform show -no-color ${{ env.terraform_output_file }})
+          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          echo "plan<<$EOF" >> "$GITHUB_ENV"
+          echo "$PLAN_OUTPUT" >> "$GITHUB_ENV"
+          echo "$EOF" >> "$GITHUB_ENV"
+
       - name: Post Plan to PR
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             // Retrieve outputs from the 'call-plan-workflow' job
+            const plan_output = ${process.env.PLAN_OUTPUT};
             const plan_outcome = '${{ needs.plan-and-validate.outputs.plan-outcome }}';
-            const plan_output = `${{ needs.plan-and-validate.outputs.plan-output }}`;
             const fmt_outcome = '${{ needs.plan-and-validate.outputs.fmt-outcome }}';
             const init_outcome = '${{ needs.plan-and-validate.outputs.init-outcome }}';
 
