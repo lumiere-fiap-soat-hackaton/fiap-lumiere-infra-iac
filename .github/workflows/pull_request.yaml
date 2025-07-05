@@ -12,7 +12,8 @@ permissions:
 jobs:
   plan-and-validate:
     name: 'Run Terraform Plan'
-    uses: ./.github/workflows/terraform-plan.yml@1.0.0
+
+    uses: ./.github/workflows/terraform-plan.yml
     secrets: inherit
 
   add-pr-comment:
