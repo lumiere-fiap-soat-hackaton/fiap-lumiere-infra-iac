@@ -20,7 +20,8 @@ jobs:
     uses: ./.github/workflows/terraform-plan.yaml
     with:
       terraform-version: '1.12.2'
-      terraform-wrapper: true
+      terraform-wrapper: false
+      output-file: 'tfplan'
     secrets: inherit
 
   add-pr-comment:
@@ -67,7 +68,7 @@ jobs:
             
             if (plan_outcome !== 'success') {
               overall_status = 'Failure ❌';
-              plan_summary = `#### Terraform Plan 📖\`${plan_outcome}\`\n\nTerraform plan failed. See details below.`
+              plan_summary = `#### Terraform Plan 📖\`${plan_outcome}\`\n\nTerraform plan failed. See details below.`;
             }
             
             // Handle empty plan output

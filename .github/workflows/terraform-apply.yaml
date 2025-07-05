@@ -20,6 +20,10 @@ jobs:
   plan:
     name: 'Run Terraform Validate and Plan'
     uses: ./.github/workflows/terraform-plan.yaml
+    with:
+      terraform-version: '1.12.2'
+      terraform-wrapper: false
+      output-file: 'tfplan'
     secrets: inherit
 
   apply:
@@ -28,7 +32,7 @@ jobs:
     needs: [plan]
 
     # Only run if the plan job was successful
-    if: needs.plan.outputs.plan-outcome == 'success'
+    if: ${{ needs.plan.outputs.plan-outcome == 'success' }}
 
     # Use an environment with a required reviewer for a manual approval gate
     environment:

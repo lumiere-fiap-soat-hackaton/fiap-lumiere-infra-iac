@@ -41,4 +41,7 @@ terraform.rc
 # plan file 
 *tfplan
 
+# Lambda function ZIP files
+*.zip
+
 **/dist/
