@@ -33,6 +33,14 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: terraform-plan # Must match the artifact name in the reusable workflow
+      
+      - name: Read plan
+        id: read-plan
+        run: |
+          PLAN_CONTENT=$(cat ${{ env.terraform_output_file }}.txt)
+          echo "PLAN_OUTPUT<<EOF" >> $GITHUB_ENV
+          echo "$PLAN_CONTENT" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
 
       - name: Post Plan to PR
         uses: actions/github-script@v7
@@ -40,7 +48,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             // Retrieve outputs from the 'call-plan-workflow' job
-            const plan_output = $(cat ${{ env.terraform_output_file }}.txt);
+            const plan_output = ${process.env.PLAN_OUTPUT};
             const plan_outcome = '${{ needs.plan-and-validate.outputs.plan-outcome }}';
             const fmt_outcome = '${{ needs.plan-and-validate.outputs.fmt-outcome }}';
             const init_outcome = '${{ needs.plan-and-validate.outputs.init-outcome }}';
