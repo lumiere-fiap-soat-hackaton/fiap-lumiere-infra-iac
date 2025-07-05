@@ -15,6 +15,9 @@ jobs:
   plan-and-validate:
     name: 'Run Terraform Validate and Plan'
     uses: ./.github/workflows/terraform-plan.yaml
+    with:
+      terraform-version: '1.12.2'
+      terraform-wrapper: true
     secrets: inherit
 
   add-pr-comment:
