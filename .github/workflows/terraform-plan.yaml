@@ -88,9 +88,11 @@ jobs:
             PLAN_OUTPUT="Terraform plan failed. Please check the logs for details."
           fi
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
-          echo "plan<<$EOF" >> ${{ inputs.output-file }}.txt
-          echo "$PLAN_OUTPUT" >> ${{ inputs.output-file }}.txt
-          echo "$EOF" >> ${{ inputs.output-file }}.txt
+          {
+            echo "plan<<$EOF"
+            echo "$PLAN_OUTPUT"
+            echo "$EOF"
+          } >> ${{ inputs.output-file }}.txt
 
       - name: Upload Terraform Plan Artifact
         if: always()
