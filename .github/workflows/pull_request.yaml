@@ -31,6 +31,9 @@ jobs:
     needs: [plan-and-validate]
     
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
