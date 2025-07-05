@@ -13,9 +13,9 @@ resource "aws_lambda_function" "media_processor" {
   role = var.lambda_execution_role_arn
 
   # Code source
-  filename         = data.archive_file.lambda_zip.output_path
+  filename         = archive_file.lambda_zip.output_path
   handler          = "lambda_function.lambda_handler"
-  source_code_hash = data.archive_file.lambda_zip.output_base64sha256
+  source_code_hash = archive_file.lambda_zip.output_base64sha256
 
   # The `depends_on` block is no longer needed as we are not creating the role.
 
