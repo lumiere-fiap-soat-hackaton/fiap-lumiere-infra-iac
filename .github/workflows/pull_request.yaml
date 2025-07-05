@@ -6,6 +6,8 @@ on:
       - 'main'
 
 env:
+  terraform_version: 1.12.2
+  terraform_wrapper: false
   terraform_output_file: tfplan
 
 permissions:
@@ -29,6 +31,12 @@ jobs:
     needs: [plan-and-validate]
     
     steps:
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.terraform_version }}
+          terraform_wrapper: ${{ env.terraform_wrapper }}
+
       - name: Download Terraform Plan Artifact
         uses: actions/download-artifact@v4
         with:
