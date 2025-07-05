@@ -3,7 +3,7 @@ on:
 
 
 env:
-  terraform_version: 1.12.2
+  terraform_version: '1.12.2'
   terraform_wrapper: false
   terraform_output_file: tfplan
 
@@ -37,7 +37,12 @@ jobs:
           terraform_wrapper: ${{ env.terraform_wrapper }}
 
       - name: Terraform Init
+        id: init
         run: terraform init
+      
+      - name: Terraform Validate
+        id: validate
+        run: terraform validate
 
       - name: Terraform Destroy
         id: destroy

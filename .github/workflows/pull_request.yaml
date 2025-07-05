@@ -1,0 +1,90 @@
+name: 'Terraform PR Commenter'
+
+on:
+  pull_request:
+    branches:
+      - 'main'
+
+permissions:
+  pull-requests: write # Required for posting a PR comment
+  contents: read       # Required for checkout in the reusable workflow
+
+jobs:
+  plan-and-validate:
+    name: 'Run Terraform Plan'
+    uses: ./.github/workflows/terraform-plan.yml@1.0.0
+    secrets: inherit
+
+  add-pr-comment:
+    name: 'Add PR Comment'
+    runs-on: ubuntu-latest
+    needs: [plan-and-validate]
+    
+    steps:
+      - name: Post Plan to PR
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            // Retrieve outputs from the 'call-plan-workflow' job
+            const plan_outcome = '${{ needs.plan-and-validate.outputs.plan-outcome }}';
+            const plan_output = `${{ needs.plan-and-validate.outputs.plan-output }}`;
+            const fmt_outcome = '${{ needs.plan-and-validate.outputs.fmt-outcome }}';
+            const init_outcome = '${{ needs.plan-and-validate.outputs.init-outcome }}';
+
+            // Determine the final status for the comment and workflow
+            let overall_status = 'Success ✅';
+            let plan_summary = `#### Terraform Plan 📖\`${plan_outcome}\``;
+            
+            if (plan_outcome !== 'success') {
+              overall_status = 'Failure ❌';
+              plan_summary = `#### Terraform Plan 📖\`${plan_outcome}\`\n\nTerraform plan failed. See details below.`
+            }
+            
+            const output = `### Terraform Plan: ${overall_status}
+            ---
+            #### Terraform Format and Style 🚀\`${fmt_outcome}\`
+            #### Terraform Initialization ⚙️\`${init_outcome}\`
+            ${plan_summary}
+
+            <details><summary>Show Plan</summary>
+
+            \`\`\`terraform
+            ${plan_output}
+            \`\`\`
+
+            </details>
+
+            *Pushed by: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
+
+            const issue_number = context.issue.number;
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue_number,
+            });
+
+            const botComment = comments.find(comment => {
+              return comment.user.type === 'Bot' && comment.body.includes('Terraform Plan:')
+            });
+
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: output
+              });
+            } else {
+              await github.rest.issues.createComment({
+                issue_number: issue_number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: output
+              });
+            }
+
+            // Fail the workflow run if the plan step failed
+            if (plan_outcome !== 'success') {
+              core.setFailed('Terraform plan step failed.');
+            }
