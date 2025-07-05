@@ -37,7 +37,11 @@ jobs:
       - name: Read plan
         id: read-plan
         run: |
-          PLAN_CONTENT=$(cat ${{ env.terraform_output_file }}.txt)
+          if [ -f "${{ env.terraform_output_file }}.txt" ]; then
+            PLAN_CONTENT=$(cat ${{ env.terraform_output_file }}.txt)
+          else
+            PLAN_CONTENT="Plan output file not found."
+          fi
           echo "PLAN_OUTPUT<<EOF" >> $GITHUB_ENV
           echo "$PLAN_CONTENT" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
@@ -48,7 +52,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             // Retrieve outputs from the 'call-plan-workflow' job
-            const plan_output = ${process.env.PLAN_OUTPUT};
+            const plan_output = process.env.PLAN_OUTPUT;
             const plan_outcome = '${{ needs.plan-and-validate.outputs.plan-outcome }}';
             const fmt_outcome = '${{ needs.plan-and-validate.outputs.fmt-outcome }}';
             const init_outcome = '${{ needs.plan-and-validate.outputs.init-outcome }}';

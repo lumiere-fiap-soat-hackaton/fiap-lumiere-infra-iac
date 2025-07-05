@@ -63,4 +63,4 @@ jobs:
 
       - name: Terraform Apply
         id: apply
-        run: terraform apply -input=false ${{ env.terraform_output_file }} -auto-approve
+        run: terraform apply -auto-approve -input=false ${{ env.terraform_output_file }}

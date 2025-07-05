@@ -81,17 +81,21 @@ jobs:
         continue-on-error: true
       
       - name: Convert plan to JSON and save as text
-        if: steps.plan.outcome == 'success'
+        if: always()
         id: plan-text
         run: |
-          PLAN_OUTPUT=$(terraform show -no-color ${{ inputs.output-file }})
+          if [ "${{ steps.plan.outcome }}" == "success" ]; then
+            PLAN_OUTPUT=$(terraform show -no-color ${{ inputs.output-file }})
+          else
+            PLAN_OUTPUT="Terraform plan failed. Please check the logs for details."
+          fi
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
           echo "plan<<$EOF" >> ${{ inputs.output-file }}.txt
           echo "$PLAN_OUTPUT" >> ${{ inputs.output-file }}.txt
           echo "$EOF" >> ${{ inputs.output-file }}.txt
 
       - name: Upload Terraform Plan Artifact
-        if: steps.plan.outcome == 'success'
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: terraform-plan
