@@ -30,7 +30,7 @@ jobs:
           script: |
             // Retrieve outputs from the 'call-plan-workflow' job
             const plan_outcome = '${{ needs.plan-and-validate.outputs.plan-outcome }}';
-            const plan_output = `${{ needs.plan-and-validate.outputs.plan-output }}`;
+            const plan_output = `${{ needs.plan-and-validate.outputs.plan-text }}`;
             const fmt_outcome = '${{ needs.plan-and-validate.outputs.fmt-outcome }}';
             const init_outcome = '${{ needs.plan-and-validate.outputs.init-outcome }}';
 
