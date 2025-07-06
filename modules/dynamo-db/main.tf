@@ -5,7 +5,7 @@ resource "aws_dynamodb_table" "main" {
   billing_mode = "PAY_PER_REQUEST"
 
   # A simple primary key (partition key)
-  hash_key = "id"
+  hash_key  = "id"
   range_key = "user_id"
 
   attribute {
@@ -13,10 +13,10 @@ resource "aws_dynamodb_table" "main" {
     type = "S"
   }
 
-    attribute {
-        name = "user_id"
-        type = "S"
-    }
+  attribute {
+    name = "user_id"
+    type = "S"
+  }
 
   point_in_time_recovery {
     enabled = false
@@ -24,7 +24,7 @@ resource "aws_dynamodb_table" "main" {
   server_side_encryption {
     enabled = true
   }
-  
+
   tags = {
     Name        = "${var.project_name}-table"
     Environment = "Dev"
