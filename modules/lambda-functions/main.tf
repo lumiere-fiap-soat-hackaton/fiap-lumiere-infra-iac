@@ -29,7 +29,7 @@ resource "aws_lambda_function" "media_processor" {
       source_code_hash,
     ]
   }
-  
+
   tags = {
     ManagedBy   = "Terraform"
     Environment = local.environment
