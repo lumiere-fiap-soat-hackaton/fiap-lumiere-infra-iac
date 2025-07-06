@@ -1,5 +1,5 @@
-resource "aws_ecr_repository" "lumiere-video-processor" {
-  name                 = "lumiere-video-processor"
+resource "aws_ecr_repository" "this" {
+  name                 = "${var.project_name}-video-processor"
   image_tag_mutability = "MUTABLE"
 
   image_scanning_configuration {

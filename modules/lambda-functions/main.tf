@@ -22,8 +22,14 @@ resource "aws_lambda_function" "media_processor" {
     size = 10240 # Maximum size in MB (10 GB)
   }
 
-  # The `depends_on` block is no longer needed as we are not creating the role.
-
+  # Ignores to lambda code and layers changes
+  lifecycle {
+    ignore_changes = [
+      layers,
+      source_code_hash,
+    ]
+  }
+  
   tags = {
     ManagedBy   = "Terraform"
     Environment = local.environment

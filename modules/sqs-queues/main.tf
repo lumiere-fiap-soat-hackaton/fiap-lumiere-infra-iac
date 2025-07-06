@@ -6,7 +6,6 @@ resource "aws_sqs_queue" "result_files_events_queue" {
   name = "${var.project_name}-result-files-events-queue"
 }
 
-
 data "aws_iam_policy_document" "source_files_events_queue_policy_doc" {
   statement {
     effect  = "Allow"
@@ -37,7 +36,6 @@ resource "aws_sqs_queue_policy" "source_queue_policy" {
   queue_url = aws_sqs_queue.source_files_events_queue.id
   policy    = data.aws_iam_policy_document.source_files_events_queue_policy_doc.json
 }
-
 
 data "aws_iam_policy_document" "result_files_events_queue_policy_doc" {
   statement {

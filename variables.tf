@@ -11,6 +11,7 @@ variable "account_region" {
 variable "project_name" {
   description = "The name of the project to use as resources prefix"
   type        = string
+  default     = "fiap-lumiere"
 }
 
 variable "load_balancer_dns" {
