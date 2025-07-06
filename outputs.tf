@@ -52,6 +52,11 @@ output "ecs_service_name" {
   value       = module.ecs_instances.ecs_service_name
 }
 
+output "ecs_container_name" {
+  description = "Name of the ECS container that runs the video processing tasks"
+  value       = module.ecs_instances.ecs_container_name
+}
+
 output "ecs_cluster_name" {
   description = "Name of the ECS cluster where the video processing tasks are deployed"
   value       = module.ecs_instances.ecs_cluster_name
