@@ -27,6 +27,11 @@ module "dynamo_db" {
   project_name = var.project_name
 }
 
+module "ecr_repositories" {
+  source                      = "./modules/ecr-ecr_repositories"
+  project_name                = var.project_name
+}
+
 module "ecs_instances" {
   source                      = "./modules/ecs-instances"
   project_name                = var.project_name
