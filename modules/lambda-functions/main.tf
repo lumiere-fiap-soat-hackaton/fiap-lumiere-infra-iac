@@ -17,6 +17,11 @@ resource "aws_lambda_function" "media_processor" {
   handler          = "lambda_function.lambda_handler"
   source_code_hash = archive_file.lambda_zip.output_base64sha256
 
+  # Ephemeral storage configuration - set to maximum size
+  ephemeral_storage {
+    size = 10240 # Maximum size in MB (10 GB)
+  }
+
   # The `depends_on` block is no longer needed as we are not creating the role.
 
   tags = {
