@@ -63,3 +63,13 @@ module "sqs_queues" {
   source_bucket_arn    = module.s3_buckets.media_storage_bucket_arn
   processor_lambda_arn = module.lambda_functions.lambda_arn
 }
+
+module "ssm_secrets" {
+  source          = "./modules/ssm-secrets"
+  project_name    = var.project_name
+  aws_region      = var.account_region
+  s3_bucket_name  = module.s3_buckets.media_storage_bucket_name
+  aws_access_key_id = var.aws_access_key_id
+  aws_secret_access_key = var.aws_secret_access_key
+  dynamodb_table_name = module.dynamo_db.table_name
+}

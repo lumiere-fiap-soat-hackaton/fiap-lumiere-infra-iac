@@ -89,6 +89,28 @@ output "result_files_events_queue_arn" {
   value       = module.sqs_queues.result_files_events_queue_arn
 }
 
+output "process_files_request_queue_arn" {
+  description = "The queue to receive file processing requests"
+  value       = module.sqs_queues.process_files_request_queue_arn
+
+}
+
+output "source_files_events_queue_url" {
+  description = "URL of the source files events queue"
+  value       = module.sqs_queues.source_files_events_queue_url
+}
+
+output "result_files_events_queue_url" {
+  description = "URL of the result files events queue"
+  value       = module.sqs_queues.result_files_events_queue_url
+}
+
+output "process_files_request_queue_url" {
+  description = "URL of the process files request queue"
+  value       = module.sqs_queues.process_files_request_queue_url
+
+}
+
 # Cognito outputs
 output "cognito_user_pool_arn" {
   description = "ARN of the Cognito User Pool"
