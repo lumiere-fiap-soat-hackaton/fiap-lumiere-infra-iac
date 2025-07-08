@@ -12,3 +12,8 @@ output "ecs_service_name" {
   description = "The name of the created ECS service."
   value       = aws_ecs_service.api.name
 }
+
+output "ecs_container_name" {
+  description = "The name of the ECS container that runs the video processing tasks."
+  value       = "${var.project_name}-api-container"
+}

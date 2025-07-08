@@ -3,6 +3,18 @@ variable "account_id" {
   type        = string
 }
 
+variable "aws_access_key_id" {
+  description = "AWS Access Key ID for the application"
+  type        = string
+  sensitive   = true
+}
+
+variable "aws_secret_access_key" {
+  description = "AWS Secret Access Key for the application"
+  type        = string
+  sensitive   = true
+}
+
 variable "account_region" {
   description = "The AWS region to deploy the resources in"
   type        = string

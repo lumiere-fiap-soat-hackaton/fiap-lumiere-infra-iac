@@ -35,8 +35,8 @@ resource "aws_security_group" "ecs_tasks_sg" {
   # Ingress rule: only allow traffic from the Load Balancer
   ingress {
     protocol        = "tcp"
-    from_port       = 80
-    to_port         = 80
+    from_port       = 3000
+    to_port         = 3000
     security_groups = [aws_security_group.lb_sg.id]
   }
 
@@ -70,13 +70,13 @@ resource "aws_lb" "main" {
 
 resource "aws_lb_target_group" "main" {
   name        = "${var.project_name}-tg"
-  port        = 80
+  port        = 3000
   protocol    = "HTTP"
   vpc_id      = var.vpc_id
   target_type = "ip" # Required for Fargate
 
   health_check {
-    path                = "/"
+    path                = "/docs"
     protocol            = "HTTP"
     matcher             = "200"
     interval            = 15
@@ -143,8 +143,9 @@ resource "aws_ecs_task_definition" "api" {
       essential = true
       portMappings = [
         {
-          containerPort = 80
-          hostPort      = 80 # Must be same as containerPort for awsvpc mode
+          name          = "api-port"
+          containerPort = 3000
+          hostPort      = 3000 # Must be same as containerPort for awsvpc mode
           protocol      = "tcp"
         }
       ]
@@ -164,6 +165,12 @@ resource "aws_ecs_service" "api" {
 
   desired_count = var.desired_count
 
+  lifecycle {
+    ignore_changes = [
+      task_definition
+    ]
+  }
+
   launch_type = "FARGATE"
   network_configuration {
     subnets         = var.public_subnets
@@ -175,9 +182,19 @@ resource "aws_ecs_service" "api" {
   load_balancer {
     target_group_arn = aws_lb_target_group.main.arn
     container_name   = "${var.project_name}-api-container"
-    container_port   = 80
+    container_port   = 3000
   }
 
   # Ensure the ALB listener is created before the service tries to attach to it
   depends_on = [aws_lb_listener.http]
+}
+
+# CloudWatch Log Group for ECS Tasks
+resource "aws_cloudwatch_log_group" "ecs_tasks" {
+  name              = "/ecs/${var.project_name}-api"
+  retention_in_days = 7
+  tags = {
+    Name      = "${var.project_name}-ecs-tasks-logs"
+    ManagedBy = "Terraform"
+  }
 }

@@ -52,6 +52,11 @@ output "ecs_service_name" {
   value       = module.ecs_instances.ecs_service_name
 }
 
+output "ecs_container_name" {
+  description = "Name of the ECS container that runs the video processing tasks"
+  value       = module.ecs_instances.ecs_container_name
+}
+
 output "ecs_cluster_name" {
   description = "Name of the ECS cluster where the video processing tasks are deployed"
   value       = module.ecs_instances.ecs_cluster_name
@@ -82,6 +87,28 @@ output "source_files_events_queue_arn" {
 output "result_files_events_queue_arn" {
   description = "The queue to receive video processing result events"
   value       = module.sqs_queues.result_files_events_queue_arn
+}
+
+output "process_files_request_queue_arn" {
+  description = "The queue to receive file processing requests"
+  value       = module.sqs_queues.process_files_request_queue_arn
+
+}
+
+output "source_files_events_queue_url" {
+  description = "URL of the source files events queue"
+  value       = module.sqs_queues.source_files_events_queue_url
+}
+
+output "result_files_events_queue_url" {
+  description = "URL of the result files events queue"
+  value       = module.sqs_queues.result_files_events_queue_url
+}
+
+output "process_files_request_queue_url" {
+  description = "URL of the process files request queue"
+  value       = module.sqs_queues.process_files_request_queue_url
+
 }
 
 # Cognito outputs
