@@ -165,6 +165,12 @@ resource "aws_ecs_service" "api" {
 
   desired_count = var.desired_count
 
+  lifecycle {
+    ignore_changes = [
+      task_definition
+    ]
+  }
+
   launch_type = "FARGATE"
   network_configuration {
     subnets         = var.public_subnets
@@ -181,4 +187,14 @@ resource "aws_ecs_service" "api" {
 
   # Ensure the ALB listener is created before the service tries to attach to it
   depends_on = [aws_lb_listener.http]
+}
+
+# CloudWatch Log Group for ECS Tasks
+resource "aws_cloudwatch_log_group" "ecs_tasks" {
+  name              = "/ecs/${var.project_name}-api"
+  retention_in_days = 7
+  tags = {
+    Name      = "${var.project_name}-ecs-tasks-logs"
+    ManagedBy = "Terraform"
+  }
 }
