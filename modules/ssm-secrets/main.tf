@@ -43,7 +43,7 @@ resource "aws_ssm_parameter" "dynamodb_table_name" {
     ManagedBy   = "Terraform"
     Type        = "Configuration"
   }
-  
+
 }
 
 resource "aws_ssm_parameter" "dynamodb_endpoint" {
