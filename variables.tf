@@ -1,4 +1,4 @@
-variable "account_id" {
+variable "aws_account_id" {
   description = "The AWS account ID where the resources will be deployed"
   type        = string
 }
@@ -15,7 +15,7 @@ variable "aws_secret_access_key" {
   sensitive   = true
 }
 
-variable "account_region" {
+variable "aws_account_region" {
   description = "The AWS region to deploy the resources in"
   type        = string
 }
@@ -26,13 +26,18 @@ variable "project_name" {
   default     = "fiap-lumiere"
 }
 
-variable "load_balancer_dns" {
+variable "environment" {
+  description = "The environment for the deployment"
   type        = string
-  description = "DNS of the load balancer to use for the API Gateway"
+  default     = "development"
 }
 
+variable "log_level" {
+  description = "Log level for the Lambda functions"
+  type        = string
+  default     = "debug"
+}
 
-# Network variables
 variable "vpc_id" {
   description = "The ID of your existing VPC."
   type        = string
@@ -40,7 +45,7 @@ variable "vpc_id" {
 
 variable "subnet_ids" {
   description = "A list of public subnet IDs where the Load Balancer and EC2 instances will be placed."
-  type        = list(string)
+  type = list(string)
 }
 
 # --- Optional Customizations ---
@@ -54,4 +59,45 @@ variable "ecs_service_desired_count" {
   description = "Number of tasks to run in the ECS service. Set to 0 to turn off the environment and save costs."
   type        = number
   default     = 0 # Default to OFF to save money
+}
+
+variable "lambda_timeout" {
+  description = "The timeout for Lambda functions in seconds"
+  type        = number
+  default     = 30
+}
+
+variable "lambda_memory_size" {
+  description = "The memory size for Lambda functions in MB"
+  type        = number
+  default     = 128
+}
+
+variable "authorizer_cache_ttl" {
+  description = "Cache TTL for the Authorizer in seconds"
+  type        = number
+  default     = 0 # Default to OFF to prevent wrong cache issues
+}
+
+variable "cloudwatch_logs_retention" {
+  description = "The retention period for CloudWatch logs in days"
+  type        = number
+  default     = 14
+}
+
+variable "bucket_sources_expiration" {
+  type        = number
+  description = "Number of days to keep source files in the S3 bucket"
+  default     = 3
+}
+
+variable "bucket_results_expiration" {
+  type        = number
+  description = "Number of days to keep result files in the S3 bucket"
+  default     = 7
+}
+
+variable "buckets_suffix" {
+  description = "A unique suffix to append to bucket names to avoid conflicts"
+  type        = string
 }

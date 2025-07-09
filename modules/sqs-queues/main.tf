@@ -62,7 +62,7 @@ data "aws_iam_policy_document" "source_files_events_queue_policy_doc" {
   }
 }
 
-resource "aws_sqs_queue_policy" "source_queue_policy" {
+resource "aws_sqs_queue_policy" "source_files_events_queue_policy" {
   queue_url = aws_sqs_queue.source_files_events_queue.id
   policy    = data.aws_iam_policy_document.source_files_events_queue_policy_doc.json
 }
