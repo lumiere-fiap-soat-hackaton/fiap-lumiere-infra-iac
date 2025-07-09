@@ -95,14 +95,21 @@ module "sqs_queues" {
 module "ssm_secrets" {
   source                   = "./modules/ssm-secrets"
   project_name             = var.project_name
-  aws_region               = var.account_region
-  s3_bucket_name           = module.s3_buckets.media_storage_bucket_name
+  aws_region               = var.aws_account_region
   aws_access_key_id        = var.aws_access_key_id
   aws_secret_access_key    = var.aws_secret_access_key
+  s3_bucket_name           = module.s3_buckets.media_storage_bucket_name
   dynamodb_table_name      = module.dynamo_db.table_name
   media_events_queue_name  = module.sqs_queues.source_files_events_queue_name
   media_process_queue_name = module.sqs_queues.process_files_request_queue_name
   media_result_queue_name  = module.sqs_queues.result_files_events_queue_name
+}
+
+module "amplify" {
+  source       = "./modules/amplify"
+  project_name = var.project_name
+
+  api_gateway_endpoint = module.api_gateway.api_gateway_invoke_url
 }
 
 module "amplify" {
