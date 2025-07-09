@@ -55,3 +55,9 @@ variable "ecs_service_desired_count" {
   type        = number
   default     = 0 # Default to OFF to save money
 }
+
+variable "domain_name" {
+  description = "The domain name for SSL certificate (e.g., api.example.com). Leave null to skip HTTPS setup."
+  type        = string
+  default     = null
+}

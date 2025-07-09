@@ -29,3 +29,15 @@ variable "desired_count" {
   type        = number
   default     = 0 # Default to OFF to save money
 }
+
+variable "ssl_certificate_arn" {
+  type        = string
+  description = "The ARN of the SSL certificate for HTTPS listener"
+  default     = null
+}
+
+variable "domain_name" {
+  type        = string
+  description = "The domain name for the SSL certificate (e.g., example.com or api.example.com)"
+  default     = null
+}

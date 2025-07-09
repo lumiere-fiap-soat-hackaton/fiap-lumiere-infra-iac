@@ -1,4 +1,3 @@
-
 # 1. --- NETWORKING (Security Groups) ---
 
 # Security Group for the Application Load Balancer
@@ -11,6 +10,13 @@ resource "aws_security_group" "lb_sg" {
     protocol    = "tcp"
     from_port   = 80
     to_port     = 80
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    protocol    = "tcp"
+    from_port   = 443
+    to_port     = 443
     cidr_blocks = ["0.0.0.0/0"]
   }
 
@@ -54,7 +60,21 @@ resource "aws_security_group" "ecs_tasks_sg" {
 }
 
 
-# 2. --- LOAD BALANCER ---
+# 2. --- SSL CERTIFICATE ---
+
+# Self-signed SSL certificate using AWS Certificate Manager
+resource "aws_acm_certificate" "self_signed" {
+  count            =  var.domain_name != null ? 1 : 0
+  private_key      = file("${path.module}/certs/private-key.pem")
+  certificate_body = file("${path.module}/certs/certificate.pem")
+
+  tags = {
+    Name      = "${var.project_name}-self-signed-cert"
+    ManagedBy = "Terraform"
+  }
+}
+
+# 3. --- LOAD BALANCER ---
 
 resource "aws_lb" "main" {
   name               = "${var.project_name}-alb"
@@ -95,6 +115,20 @@ resource "aws_lb_listener" "http" {
   load_balancer_arn = aws_lb.main.arn
   port              = "80"
   protocol          = "HTTP"
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.main.arn
+  }
+}
+
+resource "aws_lb_listener" "https" {
+  count             = var.domain_name != null ? 1 : 0
+  load_balancer_arn = aws_lb.main.arn
+  port              = "443"
+  protocol          = "HTTPS"
+  ssl_policy        = "ELBSecurityPolicy-TLS-1-2-2017-01"
+  certificate_arn   =  aws_acm_certificate.self_signed[0].arn 
 
   default_action {
     type             = "forward"
@@ -186,7 +220,7 @@ resource "aws_ecs_service" "api" {
   }
 
   # Ensure the ALB listener is created before the service tries to attach to it
-  depends_on = [aws_lb_listener.http]
+  depends_on = [aws_lb_listener.http, aws_lb_listener.https]
 }
 
 # CloudWatch Log Group for ECS Tasks

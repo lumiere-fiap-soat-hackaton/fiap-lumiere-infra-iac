@@ -67,6 +67,16 @@ output "load_balancer_dns_name" {
   value       = module.ecs_instances.load_balancer_dns_name
 }
 
+output "ssl_certificate_arn" {
+  description = "The ARN of the SSL certificate"
+  value       = module.ecs_instances.ssl_certificate_arn
+}
+
+output "ssl_certificate_domain" {
+  description = "The domain name of the SSL certificate"
+  value       = module.ecs_instances.ssl_certificate_domain
+}
+
 # DynamoDB outputs
 output "dynamodb_table_name" {
   description = "The name of the DynamoDB table"
