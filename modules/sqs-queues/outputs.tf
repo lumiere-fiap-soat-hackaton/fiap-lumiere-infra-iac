@@ -27,3 +27,18 @@ output "process_files_request_queue_url" {
   value       = aws_sqs_queue.process_files_request_queue.id
   description = "URL of the process files request queue"
 }
+
+output "source_files_events_queue_name" {
+  value       = aws_sqs_queue.source_files_events_queue.name
+  description = "Name of the source files events queue"
+}
+
+output "result_files_events_queue_name" {
+  value       = aws_sqs_queue.result_files_events_queue.name
+  description = "Name of the result files events queue"
+}
+
+output "process_files_request_queue_name" {
+  value       = aws_sqs_queue.process_files_request_queue.name
+  description = "Name of the process files request queue"
+}

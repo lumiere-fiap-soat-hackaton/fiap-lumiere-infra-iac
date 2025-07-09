@@ -50,6 +50,7 @@ module "ecs_instances" {
   ecs_task_execution_role_arn = local.account_role_arn
   ecs_task_role_arn           = local.account_role_arn
   desired_count               = var.ecs_service_desired_count
+  domain_name                 = var.domain_name
 }
 
 module "lambda_functions" {
@@ -92,14 +93,16 @@ module "sqs_queues" {
 }
 
 module "ssm_secrets" {
-  source       = "./modules/ssm-secrets"
-  project_name = var.project_name
-
-  aws_region            = var.aws_account_region
-  aws_access_key_id     = var.aws_access_key_id
-  aws_secret_access_key = var.aws_secret_access_key
-  s3_bucket_name        = module.s3_buckets.media_storage_bucket_name
-  dynamodb_table_name   = module.dynamo_db.table_name
+  source                   = "./modules/ssm-secrets"
+  project_name             = var.project_name
+  aws_region               = var.account_region
+  s3_bucket_name           = module.s3_buckets.media_storage_bucket_name
+  aws_access_key_id        = var.aws_access_key_id
+  aws_secret_access_key    = var.aws_secret_access_key
+  dynamodb_table_name      = module.dynamo_db.table_name
+  media_events_queue_name  = module.sqs_queues.source_files_events_queue_name
+  media_process_queue_name = module.sqs_queues.process_files_request_queue_name
+  media_result_queue_name  = module.sqs_queues.result_files_events_queue_name
 }
 
 module "amplify" {
