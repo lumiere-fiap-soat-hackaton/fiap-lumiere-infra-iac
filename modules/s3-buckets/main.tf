@@ -137,7 +137,7 @@ resource "aws_s3_bucket_public_access_block" "lambda_code_restrictions" {
 }
 
 # web front bucket for static files
-resource "aws_s3_bucket" "web_front_bucket" {
+/*resource "aws_s3_bucket" "web_front_bucket" {
   bucket = "${var.project_name}-web-front-bucket-${var.buckets_suffix}"
 
   tags = {
@@ -194,4 +194,4 @@ resource "aws_s3_bucket_cors_configuration" "web_front_bucket_cors_configs" {
     expose_headers  = ["ETag"]
     max_age_seconds = 3000
   }
-}
+}*/

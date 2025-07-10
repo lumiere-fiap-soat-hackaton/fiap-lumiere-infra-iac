@@ -18,15 +18,14 @@ module "cognito_pools" {
 }
 
 module "api_gateway" {
-  source       = "./modules/api-gateway"
-  project_name = var.project_name
-
-  environment          = var.environment
-  authorizer_cache_ttl = var.authorizer_cache_ttl
-  subnet_id            = var.subnet_ids[0]
-  authorizer_role_arn  = local.account_role_arn
-  load_balancer_url    = local.load_balancer_url
-  lambda_functions     = module.lambda_functions.lambda_functions
+  source                        = "./modules/api-gateway"
+  project_name                  = var.project_name
+  load_balancer_url             = local.load_balancer_url
+  environment                   = var.environment
+  authorizer_cache_ttl          = var.authorizer_cache_ttl
+  subnet_id                     = var.subnet_ids[0]
+  authorizer_role_arn           = local.account_role_arn
+  lambda_functions              = module.lambda_functions.lambda_functions
 
   depends_on = [module.ecs_instances]
 }
@@ -104,6 +103,13 @@ module "ssm_secrets" {
   media_events_queue_name  = module.sqs_queues.source_files_events_queue_name
   media_process_queue_name = module.sqs_queues.process_files_request_queue_name
   media_result_queue_name  = module.sqs_queues.result_files_events_queue_name
+}
+
+module "amplify" {
+  source       = "./modules/amplify"
+  project_name = var.project_name
+
+  api_gateway_endpoint = module.api_gateway.api_gateway_invoke_url
 }
 
 module "amplify" {

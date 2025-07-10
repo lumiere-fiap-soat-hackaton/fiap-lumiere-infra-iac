@@ -17,7 +17,7 @@ variable "lambda_functions" {
   }))
 }
 
-variable "load_balancer_url" {
+variable "application_load_balancer_url" {
   type        = string
   description = "Complete URL of the load balancer for the API Gateway"
 }
