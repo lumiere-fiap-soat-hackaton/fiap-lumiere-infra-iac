@@ -44,8 +44,5 @@ terraform.rc
 # Terraform outputs files
 outputs.json
 
-# Lambda function ZIP files
-*.zip
-
 # Ignore build artifacts
 **/dist/
