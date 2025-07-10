@@ -7,7 +7,7 @@ resource "archive_file" "lambda_zip" {
 resource "aws_lambda_function" "media_processor" {
   # Naming and runtime
   function_name = "${local.lambda_prefix}MediaProcessorLambda"
-  runtime = "python3.9"
+  runtime       = "python3.9"
 
   # The IAM role is now provided by a variable
   role = var.lambda_exec_role_arn
@@ -48,13 +48,13 @@ resource "aws_lambda_event_source_mapping" "sqs_trigger" {
 resource "aws_lambda_function" "functions" {
   for_each = local.lambda_functions
 
-  function_name = "${var.project_name}-${each.value.name}"
-  handler       = "index.handler"
-  runtime       = "nodejs18.x"
-  role          = var.lambda_exec_role_arn
-  timeout       = var.lambda_timeout
-  memory_size   = var.lambda_memory_size
-  filename      = local.artifacts_path[each.key]
+  function_name    = "${var.project_name}-${each.value.name}"
+  handler          = "index.handler"
+  runtime          = "nodejs18.x"
+  role             = var.lambda_exec_role_arn
+  timeout          = var.lambda_timeout
+  memory_size      = var.lambda_memory_size
+  filename         = local.artifacts_path[each.key]
   source_code_hash = filebase64sha256(local.artifacts_path[each.key])
 
   environment {

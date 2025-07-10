@@ -15,23 +15,6 @@ locals {
 
   # Parameter definitions to reduce repetition
   parameters = {
-    # AWS Credentials - SecureString type for sensitive data
-    aws_access_key_id = {
-      name        = "/${var.project_name}/aws/AWS_ACCESS_KEY_ID"
-      type        = "SecureString"
-      value       = var.aws_access_key_id
-      description = "AWS Access Key ID for the application"
-      tags        = merge(local.secret_tags, { Name = "${var.project_name}-aws-access-key-id" })
-    }
-
-    aws_secret_access_key = {
-      name        = "/${var.project_name}/aws/AWS_SECRET_ACCESS_KEY"
-      type        = "SecureString"
-      value       = var.aws_secret_access_key
-      description = "AWS Secret Access Key for the application"
-      tags        = merge(local.secret_tags, { Name = "${var.project_name}-aws-secret-access-key" })
-    }
-
     # DynamoDB Configuration
     dynamodb_table_name = {
       name        = "/${var.project_name}/dynamodb/DYNAMODB_TABLE_NAME"

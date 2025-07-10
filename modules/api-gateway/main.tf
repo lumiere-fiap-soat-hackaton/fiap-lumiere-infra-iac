@@ -83,7 +83,7 @@ resource "aws_api_gateway_vpc_link" "vpc_link" {
   target_arns = [aws_lb.api_gateway_lb.arn]
 
   tags = {
-    Name      = "${var.project_name}-api-gateway-vpc-link"
+    Name = "${var.project_name}-api-gateway-vpc-link"
   }
 }
 

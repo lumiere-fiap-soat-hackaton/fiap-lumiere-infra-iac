@@ -10,7 +10,7 @@ output "lambda_arn" {
 
 output "lambda_functions" {
   description = "Map of all Lambda functions with their ARNs and invoke ARNs"
-  value       = {
+  value = {
     for key, function in aws_lambda_function.functions : key => {
       name       = function.function_name
       arn        = function.arn

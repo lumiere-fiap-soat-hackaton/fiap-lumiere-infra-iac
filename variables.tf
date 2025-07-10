@@ -45,7 +45,7 @@ variable "vpc_id" {
 
 variable "subnet_ids" {
   description = "A list of public subnet IDs where the Load Balancer and EC2 instances will be placed."
-  type = list(string)
+  type        = list(string)
 }
 
 # --- Optional Customizations ---
