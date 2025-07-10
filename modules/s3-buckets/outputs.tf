@@ -18,7 +18,7 @@ output "lambda_code_bucket_arn" {
   value       = aws_s3_bucket.lambda_code_storage.arn
 }
 
-output "web_front_bucket_name" {
+/*output "web_front_bucket_name" {
   value       = aws_s3_bucket.web_front_bucket.bucket
   description = "Application storage Bucket name"
 }
@@ -31,4 +31,4 @@ output "web_front_bucket_arn" {
 output "s3_website_endpoint" {
   value       = aws_s3_bucket_website_configuration.web_front_bucket_configs.website_endpoint
   description = "S3 website endpoint URL (HTTP only)"
-}
+}*/

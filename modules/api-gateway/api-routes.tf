@@ -52,7 +52,7 @@ resource "aws_api_gateway_method" "user_records_get" {
 resource "aws_api_gateway_integration" "storage_action_integration" {
   rest_api_id             = aws_api_gateway_rest_api.api_gateway.id
   resource_id             = aws_api_gateway_resource.storage_action.id
-  http_method             = aws_api_gateway_method.storage_v1_action_post.http_method
+  http_method             = aws_api_gateway_method.storage_action_post.http_method
   uri                     = var.lambda_functions["storageUrl"].invoke_arn
   type                    = "AWS_PROXY"
   integration_http_method = "POST"
@@ -61,7 +61,7 @@ resource "aws_api_gateway_integration" "storage_action_integration" {
 resource "aws_api_gateway_integration" "user_records_integration" {
   rest_api_id             = aws_api_gateway_rest_api.api_gateway.id
   resource_id             = aws_api_gateway_resource.user_records.id
-  http_method             = aws_api_gateway_method.user_v1_records_get.http_method
+  http_method             = aws_api_gateway_method.user_records_get.http_method
   uri                     = var.lambda_functions["userRecords"].invoke_arn
   type                    = "AWS_PROXY"
   integration_http_method = "POST"
