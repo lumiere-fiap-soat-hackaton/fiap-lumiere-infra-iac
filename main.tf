@@ -21,12 +21,12 @@ module "api_gateway" {
   source       = "./modules/api-gateway"
   project_name = var.project_name
 
-  environment          = var.environment
-  authorizer_cache_ttl = var.authorizer_cache_ttl
-  subnet_id            = var.subnet_ids[0]
-  authorizer_role_arn  = local.account_role_arn
-  load_balancer_url    = local.load_balancer_url
-  lambda_functions     = module.lambda_functions.lambda_functions
+  environment                   = var.environment
+  authorizer_cache_ttl          = var.authorizer_cache_ttl
+  subnet_id                     = var.subnet_ids[0]
+  authorizer_role_arn           = local.account_role_arn
+  application_load_balancer_url = local.load_balancer_url
+  lambda_functions              = module.lambda_functions.lambda_functions
 
   depends_on = [module.ecs_instances]
 }
@@ -95,14 +95,22 @@ module "sqs_queues" {
 module "ssm_secrets" {
   source                   = "./modules/ssm-secrets"
   project_name             = var.project_name
-  aws_region               = var.account_region
-  s3_bucket_name           = module.s3_buckets.media_storage_bucket_name
+  aws_region               = var.aws_account_region
   aws_access_key_id        = var.aws_access_key_id
   aws_secret_access_key    = var.aws_secret_access_key
+  s3_bucket_name           = module.s3_buckets.media_storage_bucket_name
   dynamodb_table_name      = module.dynamo_db.table_name
+  s3_bucket_name           = module.s3_buckets.media_storage_bucket_name
   media_events_queue_name  = module.sqs_queues.source_files_events_queue_name
   media_process_queue_name = module.sqs_queues.process_files_request_queue_name
   media_result_queue_name  = module.sqs_queues.result_files_events_queue_name
+}
+
+module "amplify" {
+  source       = "./modules/amplify"
+  project_name = var.project_name
+
+  api_gateway_endpoint = module.api_gateway.api_gateway_invoke_url
 }
 
 module "amplify" {

@@ -100,6 +100,7 @@ variable "bucket_results_expiration" {
 variable "buckets_suffix" {
   description = "A unique suffix to append to bucket names to avoid conflicts"
   type        = string
+}
 
 variable "domain_name" {
   description = "The domain name for SSL certificate (e.g., api.example.com). Leave null to skip HTTPS setup."

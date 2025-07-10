@@ -11,22 +11,22 @@ resource "aws_api_gateway_deployment" "api_gateway_deploy" {
   triggers = {
     redeployment = sha1(jsonencode([
       aws_api_gateway_resource.auth.id,
-      aws_api_gateway_resource.api.id,
-      aws_api_gateway_resource.v1.id,
-
       aws_api_gateway_resource.sign_up_resource.id,
       aws_api_gateway_resource.sign_up_action_resource.id,
       aws_api_gateway_resource.sign_in_resource.id,
       aws_api_gateway_resource.sign_out_resource.id,
       aws_api_gateway_resource.user_data_resource.id,
 
+      aws_api_gateway_resource.api.id,
       aws_api_gateway_resource.storage.id,
-      aws_api_gateway_resource.storage_action.id,
       aws_api_gateway_resource.user_records.id,
+      aws_api_gateway_resource.storage_action.id,
 
+      aws_api_gateway_resource.v1.id,
       aws_api_gateway_resource.storage_v1_resource.id,
-      aws_api_gateway_resource.storage_action_v1_resource.id,
       aws_api_gateway_resource.user_records_v1_resource.id,
+      aws_api_gateway_resource.storage_upload_url_v1_resource.id,
+      aws_api_gateway_resource.storage_download_url_v1_resource.id,
     ]))
   }
 
@@ -35,14 +35,17 @@ resource "aws_api_gateway_deployment" "api_gateway_deploy" {
     aws_api_gateway_integration.sign_in_integration,
     aws_api_gateway_integration.sign_out_integration,
     aws_api_gateway_integration.user_data_integration,
-    aws_api_gateway_integration.storage_action_integration,
+
     aws_api_gateway_integration.user_records_integration,
-    aws_api_gateway_integration.storage_action_v1_integration,
+    aws_api_gateway_integration.storage_action_integration,
+
     aws_api_gateway_integration.user_records_v1_integration,
+    aws_api_gateway_integration.storage_upload_url_v1_integration,
+    aws_api_gateway_integration.storage_download_url_v1_integration,
   ]
 
   lifecycle {
-    create_before_destroy = true
+    create_before_destroy = false
   }
 }
 
@@ -51,18 +54,6 @@ resource "aws_api_gateway_stage" "api_gateway_stage" {
   deployment_id = aws_api_gateway_deployment.api_gateway_deploy.id
   rest_api_id   = aws_api_gateway_rest_api.api_gateway.id
   stage_name    = var.environment
-}
-
-# API Gateway Methods settings
-resource "aws_api_gateway_method_settings" "api_gateway_method_settings" {
-  rest_api_id = aws_api_gateway_rest_api.api_gateway.id
-  stage_name  = aws_api_gateway_stage.api_gateway_stage.stage_name
-  method_path = "*/*"
-
-  settings {
-    metrics_enabled = true
-    logging_level   = "INFO"
-  }
 }
 
 # API Gateway Access Authorizer
@@ -109,11 +100,4 @@ resource "aws_api_gateway_resource" "api" {
   rest_api_id = aws_api_gateway_rest_api.api_gateway.id
   parent_id   = aws_api_gateway_rest_api.api_gateway.root_resource_id
   path_part   = "api"
-}
-
-# /api/v1
-resource "aws_api_gateway_resource" "v1" {
-  rest_api_id = aws_api_gateway_rest_api.api_gateway.id
-  parent_id   = aws_api_gateway_resource.api.id
-  path_part   = "v1"
 }

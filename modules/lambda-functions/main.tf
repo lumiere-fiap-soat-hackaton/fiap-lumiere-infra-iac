@@ -70,7 +70,7 @@ resource "aws_lambda_permission" "api_gateway_permissions" {
   action        = "lambda:InvokeFunction"
   principal     = "apigateway.amazonaws.com"
   function_name = aws_lambda_function.functions[each.key].function_name
-  source_arn    = "${var.api_gateway_exec_arn}/*/*"
+  # source_arn    = "${var.api_gateway_exec_arn}/*/*"
 }
 
 # CloudWatch Log Groups using for_each
