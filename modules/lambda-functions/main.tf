@@ -8,13 +8,21 @@ resource "aws_lambda_function" "media_processor" {
   # Naming and runtime
   function_name = "${local.lambda_prefix}MediaProcessorLambda"
   runtime       = "python3.9"
+  timeout       = 300 # Timeout in seconds (5 minutes)
 
-  # The IAM role is now provided by a variable
+  environment {
+    variables = {
+      # Environment variables for the Lambda function
+      S3_BUCKET_NAME          = var.media_storage_bucket_name
+      MEDIA_RESULT_QUEUE_NAME = var.media_result_queue_name
+    }
+  }
+
   role = var.lambda_execution_role_arn
 
   # Code source
   filename         = archive_file.lambda_zip.output_path
-  handler          = "lambda_function.lambda_handler"
+  handler          = "src/lambda_function.lambda_handler"
   source_code_hash = archive_file.lambda_zip.output_base64sha256
 
   # Ephemeral storage configuration - set to maximum size

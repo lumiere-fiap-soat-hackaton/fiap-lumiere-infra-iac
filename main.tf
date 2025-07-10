@@ -48,6 +48,8 @@ module "lambda_functions" {
   project_name                    = var.project_name
   lambda_execution_role_arn       = local.account_role_arn
   process_files_request_queue_arn = module.sqs_queues.process_files_request_queue_arn
+  media_storage_bucket_name       = module.s3_buckets.media_storage_bucket_name
+  media_result_queue_name         = module.sqs_queues.result_files_events_queue_name
 }
 
 module "s3_buckets" {
