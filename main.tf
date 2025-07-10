@@ -18,14 +18,14 @@ module "cognito_pools" {
 }
 
 module "api_gateway" {
-  source               = "./modules/api-gateway"
-  project_name         = var.project_name
-  load_balancer_url    = local.load_balancer_url
-  environment          = var.environment
-  authorizer_cache_ttl = var.authorizer_cache_ttl
-  subnet_id            = var.subnet_ids[0]
-  authorizer_role_arn  = local.account_role_arn
-  lambda_functions     = module.lambda_functions.lambda_functions
+  source                        = "./modules/api-gateway"
+  project_name                  = var.project_name
+  environment                   = var.environment
+  authorizer_cache_ttl          = var.authorizer_cache_ttl
+  subnet_id                     = var.subnet_ids[0]
+  authorizer_role_arn           = local.account_role_arn
+  lambda_functions              = module.lambda_functions.lambda_functions
+  application_load_balancer_url = local.load_balancer_url
 
   depends_on = [module.ecs_instances]
 }
