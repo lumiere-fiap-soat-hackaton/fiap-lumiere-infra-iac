@@ -121,10 +121,26 @@ output "process_files_request_queue_url" {
 
 }
 
-# Cognito outputs
-output "cognito_user_pool_arn" {
-  description = "ARN of the Cognito User Pool"
-  value       = module.cognito_pools.user_pool_arn
+# API Gateway outputs
+output "api_gateway_url" {
+  description = "The URL of the API Gateway concatenated with the stage"
+  value       = module.api_gateway.api_gateway_invoke_url
+}
+
+# AWS Amplify outputs
+output "amplify_app_id" {
+  description = "ID of the Amplify app"
+  value       = module.amplify.amplify_app_id
+}
+
+output "amplify_app_name" {
+  description = "Name of the Amplify app"
+  value       = module.amplify.amplify_app_name
+}
+
+output "website_url" {
+  description = "URL of the website (with HTTPS)"
+  value       = module.amplify.amplify_app_production_url
 }
 
 # Project info
@@ -135,7 +151,7 @@ output "project_name" {
 
 output "aws_region" {
   description = "AWS region where resources are deployed"
-  value       = var.account_region
+  value       = var.aws_account_region
 }
 
 output "aws_account_id" {
