@@ -3,17 +3,6 @@ variable "project_name" {
   description = "Project name prefix"
 }
 
-variable "aws_access_key_id" {
-  type        = string
-  description = "AWS Access Key ID"
-}
-
-variable "aws_secret_access_key" {
-  type        = string
-  description = "AWS Secret Access Key"
-  sensitive   = true
-}
-
 variable "aws_region" {
   type        = string
   description = "AWS region for the application"

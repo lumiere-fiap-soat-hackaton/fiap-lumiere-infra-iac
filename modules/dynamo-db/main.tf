@@ -6,7 +6,7 @@ resource "aws_dynamodb_table" "main" {
 
   # A simple primary key (partition key)
   hash_key  = "id"
-  range_key = "user_id"
+  range_key = "userId"
 
   attribute {
     name = "id"
@@ -14,7 +14,7 @@ resource "aws_dynamodb_table" "main" {
   }
 
   attribute {
-    name = "user_id"
+    name = "userId"
     type = "S"
   }
 

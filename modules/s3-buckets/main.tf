@@ -30,7 +30,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "media_storage_lifecycle" {
     }
 
     filter {
-      prefix = "sources/"
+      prefix = "${var.videos_folder}/"
     }
   }
 }
@@ -60,8 +60,8 @@ resource "aws_s3_bucket_notification" "media_storage_sources_event" {
 
   queue {
     queue_arn     = var.source_files_events_queue
-    events        = ["s3:ObjectCreated:Put"]
-    filter_prefix = "sources/*"
+    events        = ["s3:ObjectCreated:*"]
+    filter_prefix = "${var.videos_folder}/"
   }
 }
 

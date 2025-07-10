@@ -8,7 +8,7 @@ variable "lambda_execution_role_arn" {
   description = "ARN of the IAM role that the Lambda function will assume"
 }
 
-variable "source_files_events_queue_arn" {
+variable "process_files_request_queue_arn" {
   type        = string
   description = "ARN of the SQS queue that triggers the Lambda function"
 }
