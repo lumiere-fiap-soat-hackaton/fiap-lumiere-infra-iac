@@ -64,3 +64,18 @@ variable "source_files_events_queue_arn" {
   type        = string
   description = "ARN of the SQS queue that triggers the Lambda function"
 }
+
+variable "process_files_request_queue_arn" {
+  type        = string
+  description = "ARN of the SQS queue that triggers the Lambda function"
+}
+
+variable "media_storage_bucket_name" {
+  type        = string
+  description = "Name of the S3 bucket where media files are stored"
+}
+
+variable "media_result_queue_name" {
+  type        = string
+  description = "Name of the SQS queue where media processing results are sent"
+}

@@ -7,14 +7,23 @@ resource "archive_file" "lambda_zip" {
 resource "aws_lambda_function" "media_processor" {
   # Naming and runtime
   function_name = "${local.lambda_prefix}MediaProcessorLambda"
-  runtime = "python3.9"
+  runtime       = "python3.9"
+  timeout       = var.lambda_timeout
+
+  environment {
+    variables = {
+      # Environment variables for the Lambda function
+      S3_BUCKET_NAME          = var.media_storage_bucket_name
+      MEDIA_RESULT_QUEUE_NAME = var.media_result_queue_name
+    }
+  }
 
   # The IAM role is now provided by a variable
   role = var.lambda_exec_role_arn
 
   # Code source
   filename         = archive_file.lambda_zip.output_path
-  handler          = "lambda_function.lambda_handler"
+  handler          = "src/lambda_function.lambda_handler"
   source_code_hash = archive_file.lambda_zip.output_base64sha256
 
   # Ephemeral storage configuration - set to maximum size
@@ -37,7 +46,7 @@ resource "aws_lambda_function" "media_processor" {
 }
 
 resource "aws_lambda_event_source_mapping" "sqs_trigger" {
-  event_source_arn = var.source_files_events_queue_arn
+  event_source_arn = var.process_files_request_queue_arn
   function_name    = aws_lambda_function.media_processor.arn
   batch_size       = local.lambda_batch_size
 }
@@ -48,13 +57,13 @@ resource "aws_lambda_event_source_mapping" "sqs_trigger" {
 resource "aws_lambda_function" "functions" {
   for_each = local.lambda_functions
 
-  function_name = "${var.project_name}-${each.value.name}"
-  handler       = "index.handler"
-  runtime       = "nodejs18.x"
-  role          = var.lambda_exec_role_arn
-  timeout       = var.lambda_timeout
-  memory_size   = var.lambda_memory_size
-  filename      = local.artifacts_path[each.key]
+  function_name    = "${var.project_name}-${each.value.name}"
+  handler          = "index.handler"
+  runtime          = "nodejs18.x"
+  role             = var.lambda_exec_role_arn
+  timeout          = var.lambda_timeout
+  memory_size      = var.lambda_memory_size
+  filename         = local.artifacts_path[each.key]
   source_code_hash = filebase64sha256(local.artifacts_path[each.key])
 
   environment {

@@ -40,7 +40,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "media_storage_lifecycle" {
     }
 
     filter {
-      prefix = "sources/"
+      prefix = "${var.videos_folder}/"
     }
   }
 
@@ -73,7 +73,7 @@ resource "aws_s3_bucket_cors_configuration" "media_storage_cors_config" {
     allowed_headers = ["*"]
     allowed_origins = ["*"]
     allowed_methods = ["GET", "PUT"]
-    expose_headers = ["ETag"]
+    expose_headers  = ["ETag"]
     max_age_seconds = 3000
   }
 }
@@ -83,12 +83,12 @@ resource "aws_s3_bucket_notification" "object_created_event" {
 
   queue {
     queue_arn     = var.sources_media_queue
-    events = ["s3:ObjectCreated:Put"]
-    filter_prefix = "sources/*"
+    events        = ["s3:ObjectCreated:*"]
+    filter_prefix = "${var.videos_folder}/"
   }
   queue {
     queue_arn     = var.results_media_queue
-    events = ["s3:ObjectCreated:Put"]
+    events        = ["s3:ObjectCreated:Put"]
     filter_prefix = "results/*"
   }
 }
@@ -191,7 +191,7 @@ resource "aws_s3_bucket_cors_configuration" "web_front_bucket_cors_configs" {
     allowed_headers = ["*"]
     allowed_methods = ["GET", "HEAD"]
     allowed_origins = ["*"]
-    expose_headers = ["ETag"]
+    expose_headers  = ["ETag"]
     max_age_seconds = 3000
   }
 }*/

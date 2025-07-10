@@ -17,6 +17,12 @@ variable "results_media_queue" {
   description = "The ARN of the SQS queue for media storage results events"
 }
 
+variable "videos_folder" {
+  type        = string
+  description = "The folder in the S3 bucket where video files are stored"
+  default     = "videos"
+}
+
 variable "sources_exp_days" {
   type        = number
   description = "Number of days to keep source files in the S3 bucket"

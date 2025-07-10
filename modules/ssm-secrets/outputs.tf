@@ -1,14 +1,3 @@
-# AWS Credentials Outputs
-output "aws_access_key_id_parameter_name" {
-  description = "SSM parameter name for AWS Access Key ID"
-  value       = aws_ssm_parameter.parameters["aws_access_key_id"].name
-}
-
-output "aws_secret_access_key_parameter_name" {
-  description = "SSM parameter name for AWS Secret Access Key"
-  value       = aws_ssm_parameter.parameters["aws_secret_access_key"].name
-}
-
 # DynamoDB Configuration Outputs
 output "dynamodb_endpoint_parameter_name" {
   description = "SSM parameter name for DynamoDB endpoint"

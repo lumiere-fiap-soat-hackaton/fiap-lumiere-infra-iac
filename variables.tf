@@ -20,6 +20,11 @@ variable "aws_account_region" {
   type        = string
 }
 
+variable "account_region" {
+  description = "The AWS region to deploy the resources in"
+  type        = string
+}
+
 variable "project_name" {
   description = "The name of the project to use as resources prefix"
   type        = string
@@ -45,7 +50,7 @@ variable "vpc_id" {
 
 variable "subnet_ids" {
   description = "A list of public subnet IDs where the Load Balancer and EC2 instances will be placed."
-  type = list(string)
+  type        = list(string)
 }
 
 # --- Optional Customizations ---

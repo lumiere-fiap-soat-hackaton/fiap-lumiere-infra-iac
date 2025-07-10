@@ -64,7 +64,7 @@ resource "aws_security_group" "ecs_tasks_sg" {
 
 # Self-signed SSL certificate using AWS Certificate Manager
 resource "aws_acm_certificate" "self_signed" {
-  count            =  var.domain_name != null ? 1 : 0
+  count            = var.domain_name != null ? 1 : 0
   private_key      = file("${path.module}/certs/private-key.pem")
   certificate_body = file("${path.module}/certs/certificate.pem")
 
@@ -128,7 +128,7 @@ resource "aws_lb_listener" "https" {
   port              = "443"
   protocol          = "HTTPS"
   ssl_policy        = "ELBSecurityPolicy-TLS-1-2-2017-01"
-  certificate_arn   =  aws_acm_certificate.self_signed[0].arn 
+  certificate_arn   = aws_acm_certificate.self_signed[0].arn
 
   default_action {
     type             = "forward"

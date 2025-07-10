@@ -18,7 +18,8 @@ resource "aws_sqs_queue" "result_files_events_queue" {
 }
 
 resource "aws_sqs_queue" "process_files_request_queue" {
-  name = "${var.project_name}-process-files-request-queue"
+  name                       = "${var.project_name}-process-files-request-queue"
+  visibility_timeout_seconds = 300 # 5 minutes
 
   redrive_policy = jsonencode({
     deadLetterTargetArn = aws_sqs_queue.process_files_request_dlq.arn
