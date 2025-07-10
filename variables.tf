@@ -1,5 +1,22 @@
-variable "account_id" {
+variable "aws_account_id" {
   description = "The AWS account ID where the resources will be deployed"
+  type        = string
+}
+
+variable "aws_access_key_id" {
+  description = "AWS Access Key ID for the application"
+  type        = string
+  sensitive   = true
+}
+
+variable "aws_secret_access_key" {
+  description = "AWS Secret Access Key for the application"
+  type        = string
+  sensitive   = true
+}
+
+variable "aws_account_region" {
+  description = "The AWS region to deploy the resources in"
   type        = string
 }
 
@@ -14,13 +31,18 @@ variable "project_name" {
   default     = "fiap-lumiere"
 }
 
-variable "load_balancer_dns" {
+variable "environment" {
+  description = "The environment for the deployment"
   type        = string
-  description = "DNS of the load balancer to use for the API Gateway"
+  default     = "development"
 }
 
+variable "log_level" {
+  description = "Log level for the Lambda functions"
+  type        = string
+  default     = "debug"
+}
 
-# Network variables
 variable "vpc_id" {
   description = "The ID of your existing VPC."
   type        = string
@@ -42,6 +64,47 @@ variable "ecs_service_desired_count" {
   description = "Number of tasks to run in the ECS service. Set to 0 to turn off the environment and save costs."
   type        = number
   default     = 0 # Default to OFF to save money
+}
+
+variable "lambda_timeout" {
+  description = "The timeout for Lambda functions in seconds"
+  type        = number
+  default     = 30
+}
+
+variable "lambda_memory_size" {
+  description = "The memory size for Lambda functions in MB"
+  type        = number
+  default     = 128
+}
+
+variable "authorizer_cache_ttl" {
+  description = "Cache TTL for the Authorizer in seconds"
+  type        = number
+  default     = 0 # Default to OFF to prevent wrong cache issues
+}
+
+variable "cloudwatch_logs_retention" {
+  description = "The retention period for CloudWatch logs in days"
+  type        = number
+  default     = 14
+}
+
+variable "bucket_sources_expiration" {
+  type        = number
+  description = "Number of days to keep source files in the S3 bucket"
+  default     = 3
+}
+
+variable "bucket_results_expiration" {
+  type        = number
+  description = "Number of days to keep result files in the S3 bucket"
+  default     = 7
+}
+
+variable "buckets_suffix" {
+  description = "A unique suffix to append to bucket names to avoid conflicts"
+  type        = string
 }
 
 variable "domain_name" {

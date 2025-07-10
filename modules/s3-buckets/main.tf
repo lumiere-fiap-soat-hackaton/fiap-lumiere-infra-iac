@@ -1,20 +1,30 @@
 resource "aws_s3_bucket" "media_storage" {
-  bucket = "${var.project_name}-bucket"
+  bucket = "${var.project_name}-bucket-${var.buckets_suffix}"
 
   tags = {
     Name        = "Media storage Bucket"
     ManagedBy   = "Terraform"
-    Environment = "dev"
+    Environment = var.environment
   }
 }
 
-resource "aws_s3_bucket" "lambda_code_storage" {
-  bucket = "${var.project_name}-lambda-code-bucket"
-
+resource "aws_s3_object" "sources" {
+  bucket = aws_s3_bucket.media_storage.bucket
+  key    = "sources/"
+  source = "/dev/null"
   tags = {
-    Name        = "Lambda Code Storage Bucket"
-    ManagedBy   = "Terraform"
-    Environment = "dev"
+    Name        = "Sources Directory"
+    Environment = var.environment
+  }
+}
+
+resource "aws_s3_object" "results" {
+  bucket = aws_s3_bucket.media_storage.bucket
+  key    = "results/"
+  source = "/dev/null"
+  tags = {
+    Name        = "Results Directory"
+    Environment = var.environment
   }
 }
 
@@ -22,15 +32,28 @@ resource "aws_s3_bucket_lifecycle_configuration" "media_storage_lifecycle" {
   bucket = aws_s3_bucket.media_storage.id
 
   rule {
-    id     = "expire-old-uploads"
+    id     = "expire-old-source-files"
     status = "Enabled"
 
     expiration {
-      days = 7
+      days = var.sources_exp_days
     }
 
     filter {
       prefix = "${var.videos_folder}/"
+    }
+  }
+
+  rule {
+    id     = "expire-old-result-files"
+    status = "Enabled"
+
+    expiration {
+      days = var.results_exp_days
+    }
+
+    filter {
+      prefix = "results/"
     }
   }
 }
@@ -55,13 +78,29 @@ resource "aws_s3_bucket_cors_configuration" "media_storage_cors_config" {
   }
 }
 
-resource "aws_s3_bucket_notification" "media_storage_sources_event" {
+resource "aws_s3_bucket_notification" "object_created_event" {
   bucket = aws_s3_bucket.media_storage.id
 
   queue {
-    queue_arn     = var.source_files_events_queue
+    queue_arn     = var.sources_media_queue
     events        = ["s3:ObjectCreated:*"]
     filter_prefix = "${var.videos_folder}/"
+  }
+  queue {
+    queue_arn     = var.results_media_queue
+    events        = ["s3:ObjectCreated:Put"]
+    filter_prefix = "results/*"
+  }
+}
+
+# lambda processor code storage bucket
+resource "aws_s3_bucket" "lambda_code_storage" {
+  bucket = "${var.project_name}-lambda-code-bucket-${var.buckets_suffix}"
+
+  tags = {
+    Name        = "Lambda Code Storage Bucket"
+    ManagedBy   = "Terraform"
+    Environment = "dev"
   }
 }
 
@@ -97,14 +136,62 @@ resource "aws_s3_bucket_public_access_block" "lambda_code_restrictions" {
   restrict_public_buckets = true
 }
 
+# web front bucket for static files
+resource "aws_s3_bucket" "web_front_bucket" {
+  bucket = "${var.project_name}-web-front-bucket-${var.buckets_suffix}"
 
+  tags = {
+    Name        = "Application storage Bucket"
+    Environment = var.environment
+  }
+}
 
-# resource "aws_s3_bucket_notification" "media_storage_results_event" {
-#   bucket = aws_s3_bucket.media_storage.id
+resource "aws_s3_bucket_website_configuration" "web_front_bucket_configs" {
+  bucket = aws_s3_bucket.web_front_bucket.id
 
-#   queue {
-#     queue_arn     = var.result_files_events_queue
-#     events = ["s3:ObjectCreated:Put"]
-#     filter_prefix = "results/"
-#   }
-# }
+  index_document {
+    suffix = "index.html"
+  }
+
+  error_document {
+    key = "index.html"
+  }
+}
+
+resource "aws_s3_bucket_policy" "web_front_bucket_policy" {
+  bucket = aws_s3_bucket.web_front_bucket.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid       = "PublicReadGetObject"
+        Effect    = "Allow"
+        Principal = "*"
+        Action    = "s3:GetObject"
+        Resource  = "${aws_s3_bucket.web_front_bucket.arn}/*"
+      }
+    ]
+  })
+}
+
+resource "aws_s3_bucket_public_access_block" "web_front_bucket_public_access" {
+  bucket = aws_s3_bucket.web_front_bucket.id
+
+  block_public_acls       = false
+  block_public_policy     = false
+  ignore_public_acls      = false
+  restrict_public_buckets = false
+}
+
+resource "aws_s3_bucket_cors_configuration" "web_front_bucket_cors_configs" {
+  bucket = aws_s3_bucket.web_front_bucket.id
+
+  cors_rule {
+    allowed_headers = ["*"]
+    allowed_methods = ["GET", "HEAD"]
+    allowed_origins = ["*"]
+    expose_headers  = ["ETag"]
+    max_age_seconds = 3000
+  }
+}

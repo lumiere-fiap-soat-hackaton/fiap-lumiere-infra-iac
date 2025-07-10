@@ -24,11 +24,11 @@ resource "aws_cognito_user_pool" "user_pool" {
   }
 }
 
-resource "aws_cognito_user_pool_client" "user_pool_client" {
-  name         = "${var.project_name}-user-pool-client"
+resource "aws_cognito_user_pool_client" "app_client" {
+  name         = "${var.project_name}-app_client"
   user_pool_id = aws_cognito_user_pool.user_pool.id
 
-  generate_secret = false
+  generate_secret = true
 
   explicit_auth_flows = [
     "ALLOW_USER_PASSWORD_AUTH",
@@ -39,3 +39,7 @@ resource "aws_cognito_user_pool_client" "user_pool_client" {
   supported_identity_providers  = ["COGNITO"]
 }
 
+resource "aws_cognito_user_pool_domain" "user_pool_domain" {
+  domain       = var.project_name
+  user_pool_id = aws_cognito_user_pool.user_pool.id
+}
