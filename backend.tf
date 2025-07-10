@@ -1,7 +1,7 @@
 terraform {
   backend "s3" {
     # Replace with your bucket name from the CLI command
-    bucket       = "tfstate-bucket-solo-16b181be-8e72-4bf3-8f30-6c49fd1c9f42"
+    bucket       = "tfstate-bucket-solo-ad5debf7-9158-4b48-a157-ca60847d5dc7"
     key          = "tfstate/terraform.tfstate"
     region       = "us-east-1"
     encrypt      = true
