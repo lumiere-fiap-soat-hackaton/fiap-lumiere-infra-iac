@@ -1,5 +1,5 @@
 resource "aws_s3_bucket" "media_storage" {
-  bucket = "${var.project_name}-bucket-${var.buckets_suffix}"
+  bucket = "${var.project_name}-bucket${var.buckets_suffix}"
 
   tags = {
     Name        = "Media storage Bucket"
@@ -10,7 +10,7 @@ resource "aws_s3_bucket" "media_storage" {
 
 resource "aws_s3_object" "sources" {
   bucket = aws_s3_bucket.media_storage.bucket
-  key    = "sources/"
+  key    = "${var.videos_folder}/"
   source = "/dev/null"
   tags = {
     Name        = "Sources Directory"
@@ -95,7 +95,7 @@ resource "aws_s3_bucket_notification" "object_created_event" {
 
 # lambda processor code storage bucket
 resource "aws_s3_bucket" "lambda_code_storage" {
-  bucket = "${var.project_name}-lambda-code-bucket-${var.buckets_suffix}"
+  bucket = "${var.project_name}-lambda-code-bucket${var.buckets_suffix}"
 
   tags = {
     Name        = "Lambda Code Storage Bucket"

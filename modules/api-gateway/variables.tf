@@ -22,11 +22,6 @@ variable "application_load_balancer_url" {
   description = "Complete URL of the load balancer for the API Gateway"
 }
 
-variable "subnet_id" {
-  description = "The ID of the subnet where the API Gateway VPC Link will be created"
-  type        = string
-}
-
 variable "authorizer_role_arn" {
   description = "ARN of the role for the Authorizer Lambda function"
   type        = string
@@ -35,4 +30,9 @@ variable "authorizer_role_arn" {
 variable "authorizer_cache_ttl" {
   description = "Cache results TTL for the Authorizer in seconds"
   type        = number
+}
+
+variable "network_load_balancer_arn" {
+  description = "ARN of the Network Load Balancer for VPC Link"
+  type        = string
 }

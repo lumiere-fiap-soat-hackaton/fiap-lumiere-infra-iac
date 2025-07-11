@@ -3,17 +3,17 @@ variable "aws_account_id" {
   type        = string
 }
 
-variable "aws_access_key_id" {
-  description = "AWS Access Key ID for the application"
-  type        = string
-  sensitive   = true
-}
+# variable "aws_access_key_id" {
+#   description = "AWS Access Key ID for the application"
+#   type        = string
+#   sensitive   = true
+# }
 
-variable "aws_secret_access_key" {
-  description = "AWS Secret Access Key for the application"
-  type        = string
-  sensitive   = true
-}
+# variable "aws_secret_access_key" {
+#   description = "AWS Secret Access Key for the application"
+#   type        = string
+#   sensitive   = true
+# }
 
 variable "aws_account_region" {
   description = "The AWS region to deploy the resources in"
@@ -51,6 +51,12 @@ variable "vpc_id" {
 variable "subnet_ids" {
   description = "A list of public subnet IDs where the Load Balancer and EC2 instances will be placed."
   type        = list(string)
+}
+
+variable "private_subnet_ids" {
+  description = "A list of private subnet IDs for internal load balancers and service discovery."
+  type        = list(string)
+  default     = []
 }
 
 # --- Optional Customizations ---
@@ -109,6 +115,12 @@ variable "buckets_suffix" {
 
 variable "domain_name" {
   description = "The domain name for SSL certificate (e.g., api.example.com). Leave null to skip HTTPS setup."
+  type        = string
+  default     = null
+}
+
+variable "security_group_id" {
+  description = "The ID of the existing security group to use for the ECS service and Lambda functions"
   type        = string
   default     = null
 }

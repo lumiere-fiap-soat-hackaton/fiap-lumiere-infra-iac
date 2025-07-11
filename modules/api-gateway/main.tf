@@ -67,20 +67,10 @@ resource "aws_api_gateway_authorizer" "access_authorizer" {
   type                             = "REQUEST"
 }
 
-# API Gateway Network load balancer
-resource "aws_lb" "api_gateway_lb" {
-  name               = "${var.project_name}-api-gateway-lb"
-  internal           = true
-  load_balancer_type = "network"
-
-  subnet_mapping {
-    subnet_id = var.subnet_id
-  }
-}
-
+# API Gateway Network load balancer - use the one from ECS module
 resource "aws_api_gateway_vpc_link" "vpc_link" {
   name        = "${var.project_name}-vpc-link"
-  target_arns = [aws_lb.api_gateway_lb.arn]
+  target_arns = [var.network_load_balancer_arn]
 
   tags = {
     Name = "${var.project_name}-api-gateway-vpc-link"

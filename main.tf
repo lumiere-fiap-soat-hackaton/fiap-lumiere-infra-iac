@@ -4,7 +4,7 @@ data "aws_caller_identity" "current" {}
 locals {
   account_id        = data.aws_caller_identity.current.account_id
   account_role_arn  = "arn:aws:iam::${local.account_id}:role/LabRole"
-  load_balancer_url = "https://${module.ecs_instances.load_balancer_dns_name}"
+  load_balancer_url = "http://${module.ecs_instances.load_balancer_dns_name}"
   artifacts_path    = "${path.module}/artifacts/"
 }
 
@@ -22,10 +22,10 @@ module "api_gateway" {
   project_name                  = var.project_name
   environment                   = var.environment
   authorizer_cache_ttl          = var.authorizer_cache_ttl
-  subnet_id                     = var.subnet_ids[0]
   authorizer_role_arn           = local.account_role_arn
   lambda_functions              = module.lambda_functions.lambda_functions
   application_load_balancer_url = local.load_balancer_url
+  network_load_balancer_arn     = module.ecs_instances.network_load_balancer_arn
 
   depends_on = [module.ecs_instances]
 }
@@ -46,10 +46,12 @@ module "ecs_instances" {
 
   vpc_id                      = var.vpc_id
   public_subnets              = var.subnet_ids
+  private_subnets             = var.private_subnet_ids
   ecs_task_execution_role_arn = local.account_role_arn
   ecs_task_role_arn           = local.account_role_arn
   desired_count               = var.ecs_service_desired_count
   domain_name                 = var.domain_name
+  existing_security_group_id  = var.security_group_id
 }
 
 module "lambda_functions" {

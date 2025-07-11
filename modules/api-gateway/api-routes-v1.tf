@@ -92,7 +92,7 @@ resource "aws_api_gateway_integration" "user_records_v1_integration" {
   rest_api_id             = aws_api_gateway_rest_api.api_gateway.id
   resource_id             = aws_api_gateway_resource.user_records_v1_resource.id
   http_method             = aws_api_gateway_method.user_records_v1_get.http_method
-  uri                     = "${var.application_load_balancer_url}/api/v1/user-records"
+  uri                     = "${var.application_load_balancer_url}/api/v1/videos"
   type                    = "HTTP_PROXY"
   integration_http_method = "GET"
   connection_type         = "VPC_LINK"

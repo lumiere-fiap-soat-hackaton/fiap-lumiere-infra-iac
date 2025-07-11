@@ -13,6 +13,12 @@ variable "public_subnets" {
   type        = list(string)
 }
 
+variable "private_subnets" {
+  description = "A list of private subnet IDs for the Network Load Balancer."
+  type        = list(string)
+  default     = []
+}
+
 variable "ecs_task_execution_role_arn" {
   type        = string
   description = "The ARN of the ECS task execution role"
@@ -39,5 +45,29 @@ variable "ssl_certificate_arn" {
 variable "domain_name" {
   type        = string
   description = "The domain name for the SSL certificate (e.g., example.com or api.example.com)"
+  default     = null
+}
+
+variable "enable_custom_domain" {
+  type        = bool
+  description = "Enable custom domain support with Route53"
+  default     = false
+}
+
+variable "route53_zone_id" {
+  type        = string
+  description = "Route53 hosted zone ID for custom domain (required if enable_custom_domain is true)"
+  default     = null
+}
+
+variable "enable_vpc_endpoints" {
+  type        = bool
+  description = "Enable VPC endpoints for ECR, S3, and CloudWatch Logs for better networking performance"
+  default     = false
+}
+
+variable "existing_security_group_id" {
+  type        = string
+  description = "The ID of an existing security group to use instead of creating new ones"
   default     = null
 }
