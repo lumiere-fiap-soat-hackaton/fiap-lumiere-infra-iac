@@ -260,8 +260,8 @@ resource "aws_lb_target_group" "nlb_to_alb_https" {
     interval            = 30
     matcher             = "200"
     path                = "/docs/"
-    port                = "443"           # Use port 443 for HTTPS health checks
-    protocol            = "HTTPS"        # Use HTTPS for ALB HTTPS targets
+    port                = "443"   # Use port 443 for HTTPS health checks
+    protocol            = "HTTPS" # Use HTTPS for ALB HTTPS targets
     timeout             = 5
     unhealthy_threshold = 2
   }

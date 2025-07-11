@@ -73,6 +73,7 @@ resource "aws_api_gateway_integration" "storage_upload_url_v1_integration" {
   uri                     = "${var.application_load_balancer_url}/api/v1/videos/upload-url"
   type                    = "HTTP_PROXY"
   integration_http_method = "POST"
+  passthrough_behavior    = "WHEN_NO_TEMPLATES"
   connection_type         = "VPC_LINK"
   connection_id           = aws_api_gateway_vpc_link.vpc_link.id
 }
@@ -84,6 +85,7 @@ resource "aws_api_gateway_integration" "storage_download_url_v1_integration" {
   uri                     = "${var.application_load_balancer_url}/api/v1/videos/download-url"
   type                    = "HTTP_PROXY"
   integration_http_method = "POST"
+  passthrough_behavior    = "WHEN_NO_TEMPLATES"
   connection_type         = "VPC_LINK"
   connection_id           = aws_api_gateway_vpc_link.vpc_link.id
 }
@@ -95,6 +97,7 @@ resource "aws_api_gateway_integration" "user_records_v1_integration" {
   uri                     = "${var.application_load_balancer_url}/api/v1/videos"
   type                    = "HTTP_PROXY"
   integration_http_method = "GET"
+  passthrough_behavior    = "WHEN_NO_TEMPLATES"
   connection_type         = "VPC_LINK"
   connection_id           = aws_api_gateway_vpc_link.vpc_link.id
 }
