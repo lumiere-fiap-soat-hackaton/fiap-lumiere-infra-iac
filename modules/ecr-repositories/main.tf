@@ -7,7 +7,7 @@ resource "aws_ecr_repository" "this" {
   }
 }
 
-resource "aws_ecr_repository" "this" {
+resource "aws_ecr_repository" "front" {
   name                 = "${var.project_name}-web-front"
   image_tag_mutability = "MUTABLE"
 

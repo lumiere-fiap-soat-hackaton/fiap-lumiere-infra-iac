@@ -20,7 +20,7 @@ resource "aws_s3_object" "sources" {
 
 resource "aws_s3_object" "results" {
   bucket = aws_s3_bucket.media_storage.bucket
-  key    = "results/"
+  key    = "${var.results_folder}/"
   source = "/dev/null"
   tags = {
     Name        = "Results Directory"
@@ -53,7 +53,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "media_storage_lifecycle" {
     }
 
     filter {
-      prefix = "results/"
+      prefix = "${var.results_folder}/"
     }
   }
 }
@@ -86,11 +86,12 @@ resource "aws_s3_bucket_notification" "object_created_event" {
     events        = ["s3:ObjectCreated:*"]
     filter_prefix = "${var.videos_folder}/"
   }
-  queue {
-    queue_arn     = var.results_media_queue
-    events        = ["s3:ObjectCreated:Put"]
-    filter_prefix = "results/*"
-  }
+
+  # queue {
+  #   queue_arn     = var.results_media_queue
+  #   events        = ["s3:ObjectCreated:Put"]
+  #   filter_prefix = "results/*"
+  # }
 }
 
 # lambda processor code storage bucket

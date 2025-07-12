@@ -26,6 +26,8 @@ resource "aws_lambda_function" "media_processor" {
   handler          = "src/lambda_function.lambda_handler"
   source_code_hash = archive_file.lambda_zip.output_base64sha256
 
+  memory_size = 512 # Memory size in MB
+ 
   # Ephemeral storage configuration - set to maximum size
   ephemeral_storage {
     size = 10240 # Maximum size in MB (10 GB)

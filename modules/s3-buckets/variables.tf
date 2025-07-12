@@ -23,6 +23,12 @@ variable "videos_folder" {
   default     = "videos"
 }
 
+variable "results_folder" {
+  type        = string
+  description = "The folder in the S3 bucket where processed results are stored"
+  default     = "results"
+}
+
 variable "sources_exp_days" {
   type        = number
   description = "Number of days to keep source files in the S3 bucket"

@@ -73,6 +73,14 @@ resource "aws_security_group" "ecs_tasks_sg" {
     security_groups = [local.lb_sg_id]
   }
 
+  # Ingress rule for frontend: allow traffic from the Load Balancer on port 80
+  ingress {
+    protocol        = "tcp"
+    from_port       = 80
+    to_port         = 80
+    security_groups = [local.lb_sg_id]
+  }
+
   # Egress rule: allow all outbound traffic so containers can pull images
   egress {
     from_port   = 0
@@ -192,19 +200,63 @@ resource "aws_lb_target_group" "main" {
   }
 }
 
-# ALB HTTP Listener
+# Target Group for ALB to forward traffic to React Frontend
+resource "aws_lb_target_group" "frontend" {
+  name        = "${var.project_name}-frontend-tg"
+  port        = 80
+  protocol    = "HTTP"
+  vpc_id      = var.vpc_id
+  target_type = "ip"
+
+  health_check {
+    enabled             = true
+    healthy_threshold   = 2
+    interval            = 30
+    matcher             = "200"
+    path                = "/"
+    port                = "traffic-port"
+    protocol            = "HTTP"
+    timeout             = 5
+    unhealthy_threshold = 2
+  }
+
+  tags = {
+    Name      = "${var.project_name}-frontend-target-group"
+    ManagedBy = "Terraform"
+  }
+}
+
+# ALB HTTP Listener with path-based routing
 resource "aws_lb_listener" "http" {
   load_balancer_arn = aws_lb.main.arn
   port              = "80"
   protocol          = "HTTP"
 
+  # Default action forwards to frontend (React app)
   default_action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.main.arn
+    target_group_arn = aws_lb_target_group.frontend.arn
   }
 }
 
-# ALB HTTPS Listener (conditional based on SSL certificate)
+# ALB Listener Rule for API routes
+resource "aws_lb_listener_rule" "api" {
+  listener_arn = aws_lb_listener.http.arn
+  priority     = 100
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.main.arn
+  }
+
+  condition {
+    path_pattern {
+      values = ["/api/*", "/docs/*"]
+    }
+  }
+}
+
+# ALB HTTPS Listener with path-based routing (conditional based on SSL certificate)
 resource "aws_lb_listener" "https" {
   count             = var.domain_name != null ? 1 : 0
   load_balancer_arn = aws_lb.main.arn
@@ -213,9 +265,46 @@ resource "aws_lb_listener" "https" {
   ssl_policy        = "ELBSecurityPolicy-TLS-1-2-2017-01"
   certificate_arn   = aws_acm_certificate.self_signed[0].arn
 
+  # Default action forwards to frontend (React app)
   default_action {
     type             = "forward"
+    target_group_arn = aws_lb_target_group.frontend.arn
+  }
+}
+
+# ALB HTTPS Listener Rule for API routes
+resource "aws_lb_listener_rule" "api_https" {
+  count        = var.domain_name != null ? 1 : 0
+  listener_arn = aws_lb_listener.https[0].arn
+  priority     = 100
+
+  action {
+    type             = "forward"
     target_group_arn = aws_lb_target_group.main.arn
+  }
+
+  condition {
+    path_pattern {
+      values = ["/api/*", "/docs/*"]
+    }
+  }
+}
+
+# ALB HTTPS Listener Rule for UI/Frontend routes
+resource "aws_lb_listener_rule" "frontend_https" {
+  count        = var.domain_name != null ? 1 : 0
+  listener_arn = aws_lb_listener.https[0].arn
+  priority     = 200
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.frontend.arn
+  }
+
+  condition {
+    path_pattern {
+      values = ["/ui/*"]
+    }
   }
 }
 
@@ -451,12 +540,103 @@ resource "aws_ecs_service" "api" {
   depends_on = [aws_lb_listener.http, aws_lb_listener.https]
 }
 
+# React Frontend Task Definition
+resource "aws_ecs_task_definition" "frontend" {
+  family                   = "${var.project_name}-web-front-task"
+  requires_compatibilities = ["FARGATE"]
+  network_mode             = "awsvpc" # Required for Fargate
+
+  cpu    = "256" # 0.25 vCPU
+  memory = "512" # 512 MiB
+
+  execution_role_arn = var.ecs_task_execution_role_arn
+  task_role_arn      = var.ecs_task_role_arn
+
+  container_definitions = jsonencode([
+    {
+      name      = "${var.project_name}-web-front-container"
+      image     = "nginx:alpine" # You can replace this with your React app image
+      cpu       = 256
+      memory    = 512
+      essential = true
+      portMappings = [
+        {
+          name          = "frontend-port"
+          containerPort = 80
+          hostPort      = 80 # Must be same as containerPort for awsvpc mode
+          protocol      = "tcp"
+        }
+      ]
+      environment = [
+        {
+          name  = "REACT_APP_API_URL"
+          value = "/api" # React app will call API through the ALB
+        }
+      ]
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          "awslogs-group"         = aws_cloudwatch_log_group.ecs_frontend.name
+          "awslogs-region"        = data.aws_region.current.name
+          "awslogs-stream-prefix" = "ecs"
+        }
+      }
+    }
+  ])
+
+  tags = {
+    Name      = "${var.project_name}-web-front-task"
+    ManagedBy = "Terraform"
+  }
+}
+
+resource "aws_ecs_service" "frontend" {
+  name            = "${var.project_name}-web-front-service"
+  cluster         = aws_ecs_cluster.main.id
+  task_definition = aws_ecs_task_definition.frontend.arn
+
+  desired_count = var.desired_count
+
+  lifecycle {
+    ignore_changes = [
+      task_definition
+    ]
+  }
+
+  launch_type = "FARGATE"
+  network_configuration {
+    subnets         = var.public_subnets
+    security_groups = [local.ecs_tasks_sg_id]
+    # Set to true if you're in public subnets and need a public IP for tasks
+    assign_public_ip = true
+  }
+
+  load_balancer {
+    target_group_arn = aws_lb_target_group.frontend.arn
+    container_name   = "${var.project_name}-web-front-container"
+    container_port   = 80
+  }
+
+  # Ensure the ALB listener is created before the service tries to attach to it
+  depends_on = [aws_lb_listener.http, aws_lb_listener.https]
+}
+
 # CloudWatch Log Group for ECS Tasks
 resource "aws_cloudwatch_log_group" "ecs_tasks" {
   name              = "/ecs/${var.project_name}-api"
   retention_in_days = 7
   tags = {
     Name      = "${var.project_name}-ecs-tasks-logs"
+    ManagedBy = "Terraform"
+  }
+}
+
+# CloudWatch Log Group for Frontend Tasks
+resource "aws_cloudwatch_log_group" "ecs_frontend" {
+  name              = "/ecs/${var.project_name}-web-front"
+  retention_in_days = 7
+  tags = {
+    Name      = "${var.project_name}-ecs-frontend-logs"
     ManagedBy = "Terraform"
   }
 }

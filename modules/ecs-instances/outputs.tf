@@ -33,9 +33,19 @@ output "ecs_service_name" {
   value       = aws_ecs_service.api.name
 }
 
+output "ecs_frontend_service_name" {
+  description = "The name of the created frontend ECS service."
+  value       = aws_ecs_service.frontend.name
+}
+
 output "ecs_container_name" {
   description = "The name of the ECS container that runs the video processing tasks."
   value       = "${var.project_name}-api-container"
+}
+
+output "ecs_frontend_container_name" {
+  description = "The name of the ECS container that runs the React frontend."
+  value       = "${var.project_name}-frontend-container"
 }
 
 output "ssl_certificate_arn" {
@@ -79,6 +89,11 @@ output "nlb_to_alb_security_group_id" {
 output "alb_target_group_arn" {
   description = "The ARN of the ALB target group"
   value       = aws_lb_target_group.main.arn
+}
+
+output "alb_frontend_target_group_arn" {
+  description = "The ARN of the ALB frontend target group"
+  value       = aws_lb_target_group.frontend.arn
 }
 
 output "nlb_target_group_arn" {
